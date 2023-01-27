@@ -1,6 +1,17 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "local>bfra-me/renovate-config"
+  "extends": ["local>bfra-me/renovate-config", ":pinAllExceptPeerDependencies"],
+  "regexManagers": [
+    {
+      "fileMatch": ["(^|/|\\.)build.ya?ml$"],
+      "matchStrings": [
+        "aarch64:\\s+\"(?<depName>.*?):(?<currentValue>.*?)\"",
+        "amd64:\\s+\"(?<depName>.*?):(?<currentValue>.*?)\"",
+        "armhf:\\s+\"(?<depName>.*?):(?<currentValue>.*?)\"",
+        "armv7:\\s+\"(?<depName>.*?):(?<currentValue>.*?)\"",
+        "i386:\\s+\"(?<depName>.*?):(?<currentValue>.*?)\""
+      ],
+      "datasourceTemplate": "docker"
+    }
   ]
 }
