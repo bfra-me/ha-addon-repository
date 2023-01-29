@@ -2,7 +2,7 @@ name: Builder
 
 env:
   BUILD_ARGS: "--test"
-  MONITORED_FILES: "build.yaml config.yaml Dockerfile rootfs"
+  MONITORED_FILES: "apparmor.txt build.yaml config.yaml Dockerfile rootfs"
 
 on:
   push:
@@ -48,14 +48,14 @@ jobs:
           done
 
           changed=$(echo ${changed_addons[@]} | rev | cut -c 2- | rev)
-
           if [[ -n ${changed} ]]; then
             echo "Changed add-ons: $changed";
-            echo "::set-output name=changed::true";
-            echo "::set-output name=addons::[$changed]";
+            echo "changed=true" >> $GITHUB_OUTPUT;
+            echo "addons=[$changed]" >> $GITHUB_OUTPUT;
           else
             echo "No add-on had any monitored files changed (${{ env.MONITORED_FILES }})";
           fi
+
   build:
     needs: init
     runs-on: ubuntu-latest
@@ -76,22 +76,24 @@ jobs:
         with:
           path: "./${{ matrix.addon }}"
 
-      - name: Check if add-on should be built
+      - name: Check if add-on is being built for architecture
         id: check
         run: |
           if [[ "${{ steps.info.outputs.architectures }}" =~ ${{ matrix.arch }} ]]; then
-             echo "::set-output name=build_arch::true";
-             echo "::set-output name=image::$(echo ${{ steps.info.outputs.image }} | cut -d'/' -f3)";
-             if [[ -z "${{ github.head_ref }}" ]] && [[ "${{ github.event_name }}" == "push" ]]; then
-                 echo "BUILD_ARGS=" >> $GITHUB_ENV;
-             fi
-           else
-             echo "${{ matrix.arch }} is not a valid arch for ${{ matrix.addon }}, skipping build";
-             echo "::set-output name=build_arch::false";
+            echo "build_arch=true" >> $GITHUB_OUTPUT;
+          else
+            echo "${{ matrix.arch }} is not a valid arch for ${{ matrix.addon }}, skipping build";
+          fi
+
+      - name: Set build arguments
+        if: steps.check.outputs.build_arch == 'true'
+        run: |
+          if [[ -z "${{ github.head_ref }}" ]] && [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "BUILD_ARGS=--docker-hub-check" >> $GITHUB_ENV;
           fi
 
       - name: Login to GitHub Container Registry
-        if: env.BUILD_ARGS != '--test'
+        if: env.BUILD_ARGS == '--docker-hub-check'
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # v2.1.0
         with:
           registry: ghcr.io
@@ -106,6 +108,5 @@ jobs:
             ${{ env.BUILD_ARGS }} \
             --${{ matrix.arch }} \
             --target /data/${{ matrix.addon }} \
-            --image "${{ steps.check.outputs.image }}" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
             --addon
