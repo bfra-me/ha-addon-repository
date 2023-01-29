@@ -22,7 +22,7 @@ permissions: {}
 
 jobs:
   Renovate:
-    uses: ${{ github.repository_owner }}/renovate-config/.github/workflows/renovate.yaml@main
+    uses: bfra-me/renovate-config/.github/workflows/renovate.yaml@main
     with:
       autodiscover: false
       dry_run: ${{ github.event_name == 'pull_request' && true }}
