@@ -3,15 +3,16 @@
   "extends": ["local>bfra-me/renovate-config", ":pinAllExceptPeerDependencies"],
   "regexManagers": [
     {
+      "datasourceTemplate": "docker",
       "fileMatch": ["(^|/|\\.)build.ya?ml$"],
       "matchStrings": [
-        "aarch64:\\s+\"(?<depName>.*?):(?<currentValue>.*?)\"",
-        "amd64:\\s+\"(?<depName>.*?):(?<currentValue>.*?)\"",
-        "armhf:\\s+\"(?<depName>.*?):(?<currentValue>.*?)\"",
-        "armv7:\\s+\"(?<depName>.*?):(?<currentValue>.*?)\"",
-        "i386:\\s+\"(?<depName>.*?):(?<currentValue>.*?)\""
+        "\\s*aarch64:\\s+?\"(?<registry>:?[\\/a-z\\.-]+\\/)*(?<depName>[\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?\"",
+        "\\s*amd64:\\s+?\"(?<registry>:?[\\/a-z\\.-]+\\/)*(?<depName>[\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?\"",
+        "\\s*armhf:\\s+?\"(?<registry>:?[\\/a-z\\.-]+\\/)*(?<depName>[\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?\"",
+        "\\s*armv7:\\s+?\"(?<registry>:?[\\/a-z\\.-]+\\/)*(?<depName>[\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?\"",
+        "\\s*i386:\\s+?\"(?<registry>:?[\\/a-z\\.-]+\\/)*(?<depName>[\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?\""
       ],
-      "datasourceTemplate": "docker"
+      "packageNameTemplate": "{{{ registry }}}{{{ depName }}}"
     }
   ]
 }
