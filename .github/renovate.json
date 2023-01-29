@@ -1,6 +1,29 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["local>bfra-me/renovate-config", ":pinAllExceptPeerDependencies"],
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchPackagePatterns": ["home-assistant/*-base*"],
+      "groupName": "Home Assistant Add-ons",
+      "customChangelogUrl": "https://github.com/home-assistant/docker-base"
+    },
+    {
+      "matchPackageNames": ["hassio-addons/base"],
+      "groupName": "hassio-addons",
+      "customChangelogUrl": "https://github.com/hassio-addons/addon-base"
+    },
+    {
+      "matchPackageNames": ["hassio-addons/debian-base"],
+      "groupName": "hassio-addons",
+      "customChangelogUrl": "https://github.com/hassio-addons/addon-debian-base"
+    },
+    {
+      "matchPackageNames": ["hassio-addons/ubuntu-base"],
+      "groupName": "hassio-addons",
+      "customChangelogUrl": "https://github.com/hassio-addons/addon-ubuntu-base"
+    }
+  ],
   "regexManagers": [
     {
       "datasourceTemplate": "docker",
