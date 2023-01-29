@@ -1,17 +1,47 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["local>bfra-me/renovate-config", ":pinAllExceptPeerDependencies"],
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchPackagePatterns": ["home-assistant/*-base*"],
+      "groupName": "Home Assistant Add-ons",
+      "customChangelogUrl": "https://github.com/home-assistant/docker-base"
+    },
+    {
+      "matchPackageNames": ["hassio-addons/base"],
+      "groupName": "hassio-addons",
+      "customChangelogUrl": "https://github.com/hassio-addons/addon-base"
+    },
+    {
+      "matchPackageNames": ["hassio-addons/debian-base"],
+      "groupName": "hassio-addons",
+      "customChangelogUrl": "https://github.com/hassio-addons/addon-debian-base"
+    },
+    {
+      "matchPackageNames": ["hassio-addons/ubuntu-base"],
+      "groupName": "hassio-addons",
+      "customChangelogUrl": "https://github.com/hassio-addons/addon-ubuntu-base"
+    }
+  ],
   "regexManagers": [
+    {
+      "datasourceTemplate": "docker",
+      "fileMatch": ["(^|/|\\.)build.ya?ml$"],
+      "matchStrings": [
+        "\\s*aarch64:\\s+?\"(?<registry>:?[\\/a-z\\.-]+\\/)*(?<depName>[\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?\"",
+        "\\s*amd64:\\s+?\"(?<registry>:?[\\/a-z\\.-]+\\/)*(?<depName>[\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?\"",
+        "\\s*armhf:\\s+?\"(?<registry>:?[\\/a-z\\.-]+\\/)*(?<depName>[\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?\"",
+        "\\s*armv7:\\s+?\"(?<registry>:?[\\/a-z\\.-]+\\/)*(?<depName>[\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?\"",
+        "\\s*i386:\\s+?\"(?<registry>:?[\\/a-z\\.-]+\\/)*(?<depName>[\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?\""
+      ],
+      "packageNameTemplate": "{{{ registry }}}{{{ depName }}}"
+    },
     {
       "fileMatch": ["(^|/|\\.)build.ya?ml$"],
       "matchStrings": [
-        "aarch64:\\s+\"(?<depName>.*?):(?<currentValue>.*?)\"",
-        "amd64:\\s+\"(?<depName>.*?):(?<currentValue>.*?)\"",
-        "armhf:\\s+\"(?<depName>.*?):(?<currentValue>.*?)\"",
-        "armv7:\\s+\"(?<depName>.*?):(?<currentValue>.*?)\"",
-        "i386:\\s+\"(?<depName>.*?):(?<currentValue>.*?)\""
-      ],
-      "datasourceTemplate": "docker"
+        "# renovate: datasource=(?<datasource>[a-z-]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[a-z-0-9]+?))?\\s+[A-Za-z0-9_]+?_VERSION\\s*:\\s*[\"']?(?<currentValue>.+?)[\"']?\\s"
+      ]
     }
   ]
 }
