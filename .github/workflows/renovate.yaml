@@ -1,0 +1,30 @@
+---
+# Renovate this repository if this workflow file or the Renovate configuration file is changed.
+name: Renovate
+
+'on':
+  pull_request:
+    paths:
+      - '.github/workflows/renovate.yaml'
+      - '.github/renovate.json'
+    types:
+      - opened
+      - reopened
+      - synchronize
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/renovate.yaml'
+      - '.github/renovate.json'
+
+permissions: {}
+
+jobs:
+  Renovate:
+    uses: ${{ github.repository_owner }}/renovate-config/.github/workflows/renovate.yaml@main
+    with:
+      autodiscover: false
+      dry_run: ${{ github.event_name == 'pull_request' && true }}
+      print_config: true
+    secrets: inherit
