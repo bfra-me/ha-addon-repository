@@ -26,16 +26,16 @@
   ],
   "regexManagers": [
     {
-      "datasourceTemplate": "docker",
       "fileMatch": ["(^|/|\\.)build.ya?ml$"],
       "matchStrings": [
-        "\\s*aarch64:\\s+?\"(?<registry>:?[\\/a-z\\.-]+\\/)*(?<depName>[\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?\"",
-        "\\s*amd64:\\s+?\"(?<registry>:?[\\/a-z\\.-]+\\/)*(?<depName>[\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?\"",
-        "\\s*armhf:\\s+?\"(?<registry>:?[\\/a-z\\.-]+\\/)*(?<depName>[\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?\"",
-        "\\s*armv7:\\s+?\"(?<registry>:?[\\/a-z\\.-]+\\/)*(?<depName>[\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?\"",
-        "\\s*i386:\\s+?\"(?<registry>:?[\\/a-z\\.-]+\\/)*(?<depName>[\\/a-z-]+)(?::(?<currentValue>[a-z0-9.-]+))?\""
+        "\\s*aarch64:\\s+\"(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?(?:@(?<currentDigest>sha256:[a-f0-9]+))?\"",
+        "\\s*amd64:\\s+\"(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?(?:@(?<currentDigest>sha256:[a-f0-9]+))?\"",
+        "\\s*armhf:\\s+\"(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?(?:@(?<currentDigest>sha256:[a-f0-9]+))?\"",
+        "\\s*armv7:\\s+\"(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?(?:@(?<currentDigest>sha256:[a-f0-9]+))?\"",
+        "\\s*i386:\\s+\"(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?(?:@(?<currentDigest>sha256:[a-f0-9]+))?\""
       ],
-      "packageNameTemplate": "{{{ registry }}}{{{ depName }}}"
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
     },
     {
       "fileMatch": ["(^|/|\\.)build.ya?ml$"],
