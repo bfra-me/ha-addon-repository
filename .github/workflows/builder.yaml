@@ -25,7 +25,7 @@ jobs:
 
       - name: Get changed files
         id: changed_files
-        uses: Ana06/get-changed-files@v2.2.0
+        uses: Ana06/get-changed-files@e0c398b7065a8d84700c471b6afc4116d1ba4e96 # v2.2.0
 
       - name: Find add-on directories
         id: addons
