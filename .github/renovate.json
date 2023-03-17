@@ -1,11 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["local>bfra-me/renovate-config", ":pinAllExceptPeerDependencies"],
+  "extends": ["local>bfra-me/renovate-config"],
   "packageRules": [
     {
       "matchDatasources": ["docker"],
-      "matchPackagePatterns": ["home-assistant/*-base*"],
+      "matchPackagePrefixes": ["ghcr.io/home-assistant/", "home-assistant/"],
       "groupName": "Home Assistant Add-ons",
+      "groupSlug": "home-assistant-addons",
       "customChangelogUrl": "https://github.com/home-assistant/docker-base"
     },
     {
