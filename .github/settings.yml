@@ -7,3 +7,9 @@ repository:
 
   # Enable merge commits for syncing with the addon repository template
   allow_merge_commit: true
+
+branches:
+  - name: main
+    protection:
+      # Allow merging pull requests with a merge commit
+      required_linear_history: false
