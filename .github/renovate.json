@@ -23,6 +23,11 @@
       "matchPackageNames": ["hassio-addons/ubuntu-base"],
       "groupName": "hassio-addons",
       "customChangelogUrl": "https://github.com/hassio-addons/addon-ubuntu-base"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "matchPackagePrefixes": ["home-assistant/", "frenck/"],
+      "versioning": "loose"
     }
   ],
   "regexManagers": [
