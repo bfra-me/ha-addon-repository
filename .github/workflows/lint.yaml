@@ -34,6 +34,6 @@ jobs:
         uses: actions/checkout@24cb9080177205b6e8c946b17badbe402adc938f # v3.4.0
 
       - name: 🚀 Run Home Assistant Add-on Lint
-        uses: frenck/action-addon-linter@989e9c32bea9b5284577233e070c4c42383cf269 # v2.10
+        uses: frenck/action-addon-linter@1163e130050891ee8a294723da275259d9515096 # v2.11.0
         with:
           path: "./${{ matrix.path }}"
