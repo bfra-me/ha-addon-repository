@@ -25,7 +25,7 @@
       "customChangelogUrl": "https://github.com/hassio-addons/addon-ubuntu-base"
     },
     {
-      "matchManagers": ["github-actions"],
+      "matchManagers": ["github-actions", "github-tags"],
       "matchPackagePrefixes": ["home-assistant/", "frenck/"],
       "versioning": "loose"
     }
