@@ -34,14 +34,9 @@
     {
       "fileMatch": ["(^|/|\\.)build.ya?ml$"],
       "matchStrings": [
-        "\\s*aarch64:\\s+\"(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?(?:@(?<currentDigest>sha256:[a-f0-9]+))?\"",
-        "\\s*amd64:\\s+\"(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?(?:@(?<currentDigest>sha256:[a-f0-9]+))?\"",
-        "\\s*armhf:\\s+\"(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?(?:@(?<currentDigest>sha256:[a-f0-9]+))?\"",
-        "\\s*armv7:\\s+\"(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?(?:@(?<currentDigest>sha256:[a-f0-9]+))?\"",
-        "\\s*i386:\\s+\"(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?(?:@(?<currentDigest>sha256:[a-f0-9]+))?\""
+        "(aarch64|amd64|armhf|armv7|i386):\\s+[\"']?(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?(?:@(?<currentDigest>sha256:[a-f0-9]+))?[\"']?\\s"
       ],
-      "datasourceTemplate": "docker",
-      "versioningTemplate": "docker"
+      "datasourceTemplate": "docker"
     },
     {
       "fileMatch": ["(^|/|\\.)build.ya?ml$"],
