@@ -25,5 +25,5 @@ jobs:
       autodiscover: false
       branch: ${{ github.event_name == 'pull_request' && github.head_ref || github.event.repository.default_branch }}
       dry_run: ${{ github.event_name == 'pull_request' && true }}
-      print_config: true
+      print_config: ${{ github.event_name == 'pull_request' && true }}
     secrets: inherit
