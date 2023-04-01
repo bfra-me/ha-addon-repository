@@ -28,6 +28,10 @@
       "matchManagers": ["github-actions"],
       "matchPackagePrefixes": ["frenck/"],
       "versioning": "loose"
+    },
+    {
+      "matchPackageNames": ["home-assistant/builder"],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$"
     }
   ],
   "regexManagers": [
