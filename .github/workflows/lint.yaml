@@ -16,7 +16,7 @@ jobs:
       addons: ${{ steps.addons.outputs.addons_list }}
     steps:
       - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
 
       - name: 🔍 Find add-on directories
         id: addons
@@ -31,7 +31,7 @@ jobs:
         path: ${{ fromJson(needs.find.outputs.addons) }}
     steps:
       - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
 
       - name: 🚀 Run Home Assistant Add-on Lint
         uses: frenck/action-addon-linter@1163e130050891ee8a294723da275259d9515096 # v2.11.0
