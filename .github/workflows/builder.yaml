@@ -79,7 +79,7 @@ jobs:
       - name: Check if add-on is being built for architecture
         id: check
         run: |
-          echo "::group::Info for ${{ matrix.addon }} (${{ matrix.arch }}))"
+          echo "::group::Info for ${{ matrix.addon }} (${{ matrix.arch }})"
           echo "${{ fromJson(steps.info.outputs) }}"
           echo "::endgroup::"
 
