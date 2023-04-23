@@ -59,7 +59,8 @@
       "currentValueTemplate": "master",
       "depNameTemplate": "home-assistant/actions",
       "packageNameTemplate": "https://github.com/home-assistant/actions",
-      "datasourceTemplate": "git-refs"
+      "datasourceTemplate": "git-refs",
+      "versioningTemplate": "git"
     }
   ]
 }
