@@ -56,6 +56,7 @@
         "\\suses: (?<depName>home-assistant\\/actions)(?<path>\\/.*)?@(?<currentDigest>[a-z0-9]{40}|[a-z0-9]{64})"
       ],
       "currentValueTemplate": "master",
+      "depNameTemplate": "home-assistant/actions",
       "packageNameTemplate": "https://github.com/home-assistant/actions",
       "datasourceTemplate": "git-refs"
     }
