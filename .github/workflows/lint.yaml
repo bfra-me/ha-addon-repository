@@ -36,4 +36,4 @@ jobs:
       - name: 🚀 Run Home Assistant Add-on Lint
         uses: frenck/action-addon-linter@e11e2b234ecc038397d370350d399c5ed6156148 # v2.12.0
         with:
-          path: "./${{ matrix.path }}"
+          path: './${{ matrix.path }}'
