@@ -81,19 +81,20 @@ jobs:
         run: |
           if [[ "${{ steps.info.outputs.architectures }}" =~ ${{ matrix.arch }} ]]; then
             echo "build_arch=true" >> $GITHUB_OUTPUT;
+            echo "image=$(echo ${{ steps.info.outputs.image }} | cut -d'/' -f3)" >> $GITHUB_OUTPUT;
           else
             echo "${{ matrix.arch }} is not a valid arch for ${{ matrix.addon }}, skipping build";
           fi
 
       - name: Set build arguments
-        if: steps.check.outputs.build_arch == 'true'
-        run: |
-          if [[ -z "${{ github.head_ref }}" ]] && [[ "${{ github.event_name }}" == "push" ]]; then
-            echo "BUILD_ARGS=--docker-hub-check" >> $GITHUB_ENV;
-          fi
+        if: >-
+          steps.check.outputs.build_arch == 'true' &&
+          github.head_ref &&
+          (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        run: echo "BUILD_ARGS=" >> $GITHUB_ENV
 
       - name: Login to GitHub Container Registry
-        if: env.BUILD_ARGS == '--docker-hub-check'
+        if: env.BUILD_ARGS != '--test'
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a # v2.1.0
         with:
           registry: ghcr.io
@@ -108,5 +109,6 @@ jobs:
             ${{ env.BUILD_ARGS }} \
             --${{ matrix.arch }} \
             --target /data/${{ matrix.addon }} \
+            --image "${{ steps.check.outputs.image }}" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
             --addon
