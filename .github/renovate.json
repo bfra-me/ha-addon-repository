@@ -6,23 +6,19 @@
       "matchDatasources": ["docker"],
       "matchPackagePrefixes": ["ghcr.io/home-assistant/", "home-assistant/"],
       "groupName": "Home Assistant Add-ons",
-      "groupSlug": "home-assistant-addons",
-      "customChangelogUrl": "https://github.com/home-assistant/docker-base"
+      "groupSlug": "home-assistant-addons"
     },
     {
       "matchPackageNames": ["hassio-addons/base"],
-      "groupName": "hassio-addons",
-      "customChangelogUrl": "https://github.com/hassio-addons/addon-base"
+      "groupName": "hassio-addons"
     },
     {
       "matchPackageNames": ["hassio-addons/debian-base"],
-      "groupName": "hassio-addons",
-      "customChangelogUrl": "https://github.com/hassio-addons/addon-debian-base"
+      "groupName": "hassio-addons"
     },
     {
       "matchPackageNames": ["hassio-addons/ubuntu-base"],
-      "groupName": "hassio-addons",
-      "customChangelogUrl": "https://github.com/hassio-addons/addon-ubuntu-base"
+      "groupName": "hassio-addons"
     },
     {
       "matchManagers": ["github-actions"],
@@ -53,6 +49,16 @@
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-z-]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[a-z-0-9]+?))?\\s+[A-Za-z0-9_]+?_VERSION\\s*:\\s*[\"']?(?<currentValue>.+?)[\"']?\\s"
       ]
+    },
+    {
+      "fileMatch": ["^\\.github/(?:workflows|actions)/.+\\.ya?ml$"],
+      "matchStrings": [
+        "\\suses: home-assistant\\/actions(?<path>\\/.*)?(?:@(?<currentDigest>.+?))?"
+      ],
+      "currentValueTemplate": "master",
+      "depNameTemplate": "home-assistant/actions",
+      "packageNameTemplate": "https://github.com/home-assistant/actions",
+      "datasourceTemplate": "git-refs"
     }
   ]
 }
