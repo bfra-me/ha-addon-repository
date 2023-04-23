@@ -53,11 +53,11 @@
     {
       "fileMatch": ["^\\.github/(?:workflows|actions)/.+\\.ya?ml$"],
       "matchStrings": [
-        "\\suses: (?<depName>.*?)(?<path>\\/.*)?@(?<currentDigest>[a-z0-9]{40}|[a-z0-9]{64})"
+        "\\suses: home-assistant\\/actions(?<path>\\/.*)?@master",
+        "\\suses: home-assistant\\/actions(?<path>\\/.*)?@(?<currentDigest>[a-z0-9]{40}|[a-z0-9]{64})"
       ],
       "currentValueTemplate": "master",
       "depNameTemplate": "home-assistant/actions",
-      "depTypeTemplate": "action",
       "packageNameTemplate": "https://github.com/home-assistant/actions",
       "datasourceTemplate": "git-refs"
     }
