@@ -46,7 +46,7 @@ jobs:
     if: needs.should-renovate.outputs.renovate == 'true'
     with:
       autodiscover: false
-      branch: ${{ github.event_name == 'pull_request' && github.head_ref }}
+      branch: ${{ github.head_ref }}
       dry_run: ${{ github.event_name == 'pull_request' && true }}
       print_config: ${{ github.event_name == 'pull_request' && true }}
     secrets: inherit
