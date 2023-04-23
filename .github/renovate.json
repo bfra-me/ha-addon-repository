@@ -53,7 +53,7 @@
     {
       "fileMatch": ["^\\.github/(?:workflows|actions)/.+\\.ya?ml$"],
       "matchStrings": [
-        "\\suses: home-assistant\\/actions(?<path>\\/.*)?@master",
+        "\\suses: home-assistant\\/actions(?<path>\\/.*)?@(?<currentValue>master)",
         "\\suses: home-assistant\\/actions(?<path>\\/.*)?@(?<currentDigest>[a-z0-9]{40}|[a-z0-9]{64})"
       ],
       "currentValueTemplate": "master",
