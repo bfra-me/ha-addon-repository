@@ -79,16 +79,11 @@ jobs:
       - name: Check if add-on is being built for architecture
         id: check
         run: |
-          echo "::group::Info for ${{ matrix.addon }} - ${{ matrix.arch }}"
-          echo "${{ fromJson(steps.info.outputs) }}"
-          echo "::endgroup::"
-
           if [[ "${{ steps.info.outputs.architectures }}" =~ ${{ matrix.arch }} ]]; then
             echo "build_arch=true" >> $GITHUB_OUTPUT;
           else
             echo "${{ matrix.arch }} is not a valid arch for ${{ matrix.addon }}, skipping build";
           fi
-        shell: bash
 
       - name: Set build arguments
         if: steps.check.outputs.build_arch == 'true'
