@@ -57,7 +57,7 @@
     {
       "fileMatch": ["^\\.github/(?:workflows|actions)/.+\\.ya?ml$"],
       "matchStrings": [
-        "uses:\\s+(?<depName>home-assistant\\/actions(?<path>\\/.*)?)@(?<currentDigest>.+?)"
+        "uses:\\s+(?<depName>home-assistant\\/actions(?<path>\\/.*)?)@(?<currentDigest>.+)"
       ],
       "currentValueTemplate": "master",
       "autoReplaceStringTemplate": "uses: {{depName}}@{{#if newDigest}}{{newDigest}}{{#if newValue}} # {{newValue}}{{/if}}{{/if}}{{#unless newDigest}}{{newValue}}{{/unless}}",
