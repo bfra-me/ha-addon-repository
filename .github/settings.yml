@@ -1,15 +1,6 @@
-# Extend default settings for all of my personal repositories defined in .github/settings.yml
+# Extend default settings for all of my @bfra-me repositories defined in .github/settings.yml
 _extends: .github
 
 repository:
   description: Template repository for a Home Assistant add-on repository
-  topics: home-assistant, hassio, addon, template
-
-  # Enable merge commits for syncing with the addon repository template
-  allow_merge_commit: true
-
-branches:
-  - name: main
-    protection:
-      # Allow merging pull requests with a merge commit
-      required_linear_history: false
+  topics: homeassistant, home-assistant, hassio, addon, addons, template
