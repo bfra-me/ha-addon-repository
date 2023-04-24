@@ -26,6 +26,10 @@
       "versioning": "loose"
     },
     {
+      "matchDepPatterns": ["^home-assistant/actions(\\/.*)?$"],
+      "groupName": "Home Assistant Actions"
+    },
+    {
       "matchPackageNames": ["home-assistant/builder"],
       "matchDepTypes": ["action"],
       "extractVersion": "^(?<version>\\d+\\.\\d+\\.\\d+)$",
@@ -56,7 +60,7 @@
         "\\suses:\\s+(?<depName>home-assistant\\/actions(?<path>\\/.*)?)@(?<currentDigest>.+?)\\s"
       ],
       "currentValueTemplate": "master",
-      "autoReplaceStringTemplate": "{{indentation}}uses: {{depName}}@{{#if newDigest}}{{newDigest}}{{#if newValue}} # {{newValue}}{{/if}}{{/if}}{{#unless newDigest}}{{newValue}}{{/unless}}\\n",
+      "autoReplaceStringTemplate": "{{indentation}}uses: {{depName}}@{{#if newDigest}}{{newDigest}}{{#if newValue}} # {{newValue}}{{/if}}{{/if}}{{#unless newDigest}}{{newValue}}{{/unless}}",
       "packageNameTemplate": "https://github.com/home-assistant/actions",
       "datasourceTemplate": "git-refs"
     }
