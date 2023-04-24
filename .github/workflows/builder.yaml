@@ -6,10 +6,9 @@ env:
 
 on:
   push:
-    branches:
-      - main
-      - 'renovate/**'
+    branches: [main]
   pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -89,8 +88,10 @@ jobs:
       - name: Set build arguments
         if: >-
           steps.check.outputs.build_arch == 'true' &&
-          github.head_ref &&
-          (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+          (
+            (github.event_name == 'push' && github.head_ref == '') ||
+            github.event_name == 'workflow_dispatch'
+          )
         run: echo "BUILD_ARGS=" >> $GITHUB_ENV
 
       - name: Login to GitHub Container Registry
