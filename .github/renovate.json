@@ -53,19 +53,11 @@
     {
       "fileMatch": ["^\\.github/(?:workflows|actions)/.+\\.ya?ml$"],
       "matchStrings": [
-        "\\suses: (?<depName>home-assistant/actions(?:\\/.*)?)@(?<currentValue>master)"
-      ],
-      "autoReplaceStringTemplate": "{{indentation}}uses: {{depName}}@{{newDigest}}",
-      "packageNameTemplate": "https://github.com/home-assistant/actions",
-      "datasourceTemplate": "git-refs"
-    },
-    {
-      "fileMatch": ["^\\.github/(?:workflows|actions)/.+\\.ya?ml$"],
-      "matchStrings": [
-        "\\suses: home-assistant\\/actions(?<path>\\/.*)?@(?<currentDigest>.+?)\\s"
+        "\\suses:\\s+(?<depName>home-assistant\\/actions(?<path>\\/.*)?)@(?<currentDigest>.+?)\\s"
       ],
       "currentValueTemplate": "master",
       "depNameTemplate": "home-assistant/actions",
+      "autoReplaceStringTemplate": "{{indentation}}uses: {{depName}}@{{newDigest}}",
       "packageNameTemplate": "https://github.com/home-assistant/actions",
       "datasourceTemplate": "git-refs"
     }
