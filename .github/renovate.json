@@ -1,6 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["local>bfra-me/renovate-config"],
+  "automergeType": "pr",
+  "prCreation": "immediate",
   "packageRules": [
     {
       "matchDatasources": ["docker"],
@@ -57,7 +59,7 @@
     {
       "fileMatch": ["^\\.github/(?:workflows|actions)/.+\\.ya?ml$"],
       "matchStrings": [
-        "\\s+uses:\\s+(?<depName>home-assistant\\/actions(?<path>\\/.*)?)@(?<currentDigest>.+)"
+        "\\s*uses:\\s+?(?<depName>home-assistant\\/actions(?<path>\\/.*)?)@(?<currentDigest>.+)"
       ],
       "currentValueTemplate": "master",
       "autoReplaceStringTemplate": "{{indentation}}uses: {{depName}}@{{#if newDigest}}{{newDigest}}{{#if newValue}} # {{newValue}}{{/if}}{{/if}}{{#unless newDigest}}{{newValue}}{{/unless}}\\n",

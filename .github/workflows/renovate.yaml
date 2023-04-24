@@ -5,6 +5,8 @@ name: Renovate
 'on':
   issue_comment:
     types: [edited]
+  issues:
+    types: [edited]
   pull_request:
     branches:
       - main
@@ -17,20 +19,23 @@ name: Renovate
     paths:
       - '.github/workflows/renovate.yaml'
       - '.github/renovate.json'
+  workflow_dispatch:
 
 permissions: {}
 
 jobs:
   should-renovate:
     name: Check if Renovate should run
-    if: >
+    if: >-
       github.event_name == 'pull_request' ||
       github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' ||
       (
-        github.event_name == 'issue_comment' &&
+        (github.event_name == 'issue_comment' || github.event_name == 'issues') &&
         (
-          contains(github.event.issue.body, 'x] <!-- rebase-check -->') ||
-          contains(github.event.issue.body, 'x] <!-- manual job -->')
+          contains(github.event.issue.body, '- [x] <!-- rebase-check -->') ||
+          contains(github.event.issue.body, '- [x] <!-- manual job -->') ||
+          contains(github.event.issue.body, '- [x] <!-- retry-branch=')
         )
       )
     outputs:
