@@ -56,8 +56,7 @@
         "\\suses:\\s+(?<depName>home-assistant\\/actions(?<path>\\/.*)?)@(?<currentDigest>.+?)\\s"
       ],
       "currentValueTemplate": "master",
-      "depNameTemplate": "home-assistant/actions",
-      "autoReplaceStringTemplate": "{{indentation}}uses: {{depName}}@{{newDigest}}",
+      "autoReplaceStringTemplate": "{{indentation}}uses: {{depName}}@{{#if newDigest}}{{newDigest}}{{#if newValue}} # {{newValue}}{{/if}}{{/if}}{{#unless newDigest}}{{newValue}}{{/unless}}\\n",
       "packageNameTemplate": "https://github.com/home-assistant/actions",
       "datasourceTemplate": "git-refs"
     }
