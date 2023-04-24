@@ -29,7 +29,7 @@ jobs:
 
       - name: Find add-on directories
         id: addons
-        uses: home-assistant/actions/helpers/find-addons@master
+        uses: home-assistant/actions/helpers/find-addons@7c15288c0f1d6560821f14eb7c6d24dcd383bdbd # master
 
       - name: Get changed add-ons
         id: changed_addons
@@ -72,7 +72,7 @@ jobs:
 
       - name: Get information
         id: info
-        uses: home-assistant/actions/helpers/info@master
+        uses: home-assistant/actions/helpers/info@7c15288c0f1d6560821f14eb7c6d24dcd383bdbd # master
         with:
           path: './${{ matrix.addon }}'
 
