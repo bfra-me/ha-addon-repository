@@ -26,6 +26,10 @@
       "versioning": "loose"
     },
     {
+      "matchDepPatterns": ["^home-assistant/actions(\\/.*)?$"],
+      "groupName": "Home Assistant Actions"
+    },
+    {
       "matchPackageNames": ["home-assistant/builder"],
       "matchDepTypes": ["action"],
       "extractVersion": "^(?<version>\\d+\\.\\d+\\.\\d+)$",
@@ -53,10 +57,10 @@
     {
       "fileMatch": ["^\\.github/(?:workflows|actions)/.+\\.ya?ml$"],
       "matchStrings": [
-        "\\suses: home-assistant\\/actions(?<path>\\/.*)?(?:@(?<currentDigest>.+?))?"
+        "\\suses:\\s+(?<depName>home-assistant\\/actions(?<path>\\/.*)?)@(?<currentDigest>.+?)\\s"
       ],
       "currentValueTemplate": "master",
-      "depNameTemplate": "home-assistant/actions",
+      "autoReplaceStringTemplate": "{{indentation}}uses: {{depName}}@{{#if newDigest}}{{newDigest}}{{#if newValue}} # {{newValue}}{{/if}}{{/if}}{{#unless newDigest}}{{newValue}}{{/unless}}",
       "packageNameTemplate": "https://github.com/home-assistant/actions",
       "datasourceTemplate": "git-refs"
     }
