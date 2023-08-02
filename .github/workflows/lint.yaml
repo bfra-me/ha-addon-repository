@@ -51,5 +51,5 @@ jobs:
         env:
           PRETTIER_VERSION: 3.0.0 # renovate: datasource=npm depName=prettier
         with:
-          prettier_options: '--check ./**/*.{json,md,yaml}'
+          prettier_options: --check .
           prettier_version: ${{ env.PRETTIER_VERSION }}
