@@ -26,6 +26,6 @@ jobs:
           permissions: 'administration:write, contents:read, issues:write, members:write'
 
       - name: Sync Settings to GitHub
-        uses: exivity/actions/sync-defaults@dcf69e3eac918dc41eed9fd29447b7f9e19aed0c # main
+        uses: exivity/actions/sync-defaults@ddda7f327bdf042b1135a25f58d223253acdd416 # main
         with:
           gh-token: ${{ steps.get_workflow_token.outputs.token }}
