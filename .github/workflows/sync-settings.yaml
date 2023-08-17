@@ -23,9 +23,9 @@ jobs:
           application_id: ${{ secrets.APPLICATION_ID }}
           application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
           organization: ${{ github.repository_owner }}
-          permissions: 'administration:write, contents:read, issues:write, members:write'
+          permissions: 'administration:write, contents:read, issues:write'
 
       - name: Sync Settings to GitHub
-        uses: exivity/actions/sync-defaults@46612a6ab50e9ca648b4d6517b772e1bf64045a9 # main
-        with:
-          gh-token: ${{ steps.get_workflow_token.outputs.token }}
+        uses: elstudio/actions-settings@v3-beta
+        env:
+          GITHUB_TOKEN: ${{ steps.get_workflow_token.outputs.token }}
