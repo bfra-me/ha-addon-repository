@@ -1,6 +1,4 @@
-# Extend default settings for all of my @bfra-me repositories defined in .github/settings.yml
-_extends: .github
-
+---
 repository:
   description: Template repository for a Home Assistant add-on repository
   topics: homeassistant, home-assistant, hassio, addon, addons, template
