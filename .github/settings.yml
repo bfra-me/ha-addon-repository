@@ -12,8 +12,6 @@ branches:
         strict: true
         contexts: []
       enforce_admins: true
-      required_pull_request_reviews:
-        null
-      restrictions:
-        null
+      required_pull_request_reviews: null
+      restrictions: null
       required_linear_history: true
