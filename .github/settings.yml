@@ -4,3 +4,14 @@ _extends: .github
 repository:
   description: Template repository for a Home Assistant add-on repository
   topics: homeassistant, home-assistant, hassio, addon, addons, template
+
+branches:
+  - name: main
+    protection:
+      required_status_checks:
+        strict: true
+        contexts: []
+      enforce_admins: true
+      required_pull_request_reviews: null
+      restrictions: null
+      required_linear_history: true
