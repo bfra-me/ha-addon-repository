@@ -46,7 +46,7 @@ jobs:
         run: echo "renovate=true" >> $GITHUB_OUTPUT
 
   Renovate:
-    uses: bfra-me/renovate-config/.github/workflows/renovate.yaml@f9d47e655bcdce2053b331bdae20f95a7f168c92 # v1.18.1
+    uses: bfra-me/renovate-config/.github/workflows/renovate.yaml@79d1f6116aaea8841725a85a33e1e234c4eca49b # v1.21.0
     needs: should-renovate
     if: needs.should-renovate.outputs.renovate == 'true'
     with:
