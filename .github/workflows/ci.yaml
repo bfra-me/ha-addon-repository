@@ -1,10 +1,11 @@
-name: Builder
+---
+name: CI
 
 env:
   BUILD_ARGS: '--test'
   MONITORED_FILES: 'apparmor.txt build.yaml config.yaml Dockerfile rootfs'
 
-on:
+'on':
   push:
     branches: [main]
   pull_request:
@@ -54,6 +55,40 @@ jobs:
           else
             echo "No add-on had any monitored files changed (${{ env.MONITORED_FILES }})";
           fi
+
+  lint-addon:
+    if: needs.init.outputs.changed == 'true'
+    name: Lint add-on ${{ matrix.addon }}
+    needs: init
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        addon: ${{ fromJson(needs.init.outputs.changed_addons) }}
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+
+      - name: 🚀 Run Home Assistant Add-on Lint
+        uses: frenck/action-addon-linter@83adbc9fc3059d6ec31c71a345a6bcf35ee7d419 # v2.13.2
+        with:
+          path: './${{ matrix.addon }}'
+
+  lint-prettier:
+    name: Prettier
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: 💅🏽 Run Prettier
+        uses: creyD/prettier_action@31355f8eef017f8aeba2e0bc09d8502b13dbbad1 # v4.3
+        env:
+          PRETTIER_VERSION: 3.0.3 # renovate: datasource=npm depName=prettier
+        with:
+          prettier_options: --check .
+          prettier_version: ${{ env.PRETTIER_VERSION }}
 
   build:
     needs: init
