@@ -10,7 +10,7 @@
   },
   "mounts": ["type=volume,target=/var/lib/docker"],
   "customizations": {
-    "extensions": ["timonwong.shellcheck", "esbenp.prettier-vscode"],
+    "extensions": ["esbenp.prettier-vscode", "github.vscode-github-actions", "timonwong.shellcheck"],
     "settings": {
       "terminal.integrated.profiles.linux": {
         "zsh": {

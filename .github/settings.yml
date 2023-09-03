@@ -1,7 +1,11 @@
 ---
+_extends: .github:common-settings.yaml
+
 repository:
+  name: ha-addon-repository
   description: Template repository for a Home Assistant add-on repository
   topics: homeassistant, home-assistant, hassio, addon, addons, template
+  is_template: true
 
 branches:
   - name: main
