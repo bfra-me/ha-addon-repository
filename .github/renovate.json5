@@ -40,7 +40,7 @@
       separateMinorPatch: false,
     },
   ],
-  regexManagers: [
+  customManagers: [
     {
       customType: 'regex',
       fileMatch: ['(^|/|\\.)build.ya?ml$'],
