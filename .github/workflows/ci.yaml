@@ -58,7 +58,7 @@ jobs:
 
   lint-addon:
     if: needs.init.outputs.changed == 'true'
-    name: Lint add-on ${{ matrix.addon }}
+    name: Lint add-on
     needs: init
     runs-on: ubuntu-latest
     strategy:
