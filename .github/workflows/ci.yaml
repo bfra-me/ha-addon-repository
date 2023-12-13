@@ -12,6 +12,10 @@ env:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   init:
     runs-on: ubuntu-latest
