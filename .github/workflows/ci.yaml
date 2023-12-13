@@ -69,7 +69,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: 🚀 Run Home Assistant Add-on Lint
-        uses: frenck/action-addon-linter@83adbc9fc3059d6ec31c71a345a6bcf35ee7d419 # v2.13.2
+        uses: frenck/action-addon-linter@26ca0dd8709f99061045b845e4a6aabd91bde941 # v2.15.0
         with:
           path: './${{ matrix.addon }}'
 
@@ -139,7 +139,7 @@ jobs:
 
       - name: Build ${{ matrix.addon }} add-on
         if: steps.check.outputs.build_arch == 'true'
-        uses: home-assistant/builder@2023.09.0
+        uses: home-assistant/builder@2023.12.0
         with:
           args: |
             ${{ env.BUILD_ARGS }} \
