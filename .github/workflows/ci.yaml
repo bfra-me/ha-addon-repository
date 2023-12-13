@@ -12,6 +12,10 @@ env:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   init:
     runs-on: ubuntu-latest
@@ -69,7 +73,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: 🚀 Run Home Assistant Add-on Lint
-        uses: frenck/action-addon-linter@83adbc9fc3059d6ec31c71a345a6bcf35ee7d419 # v2.13.2
+        uses: frenck/action-addon-linter@26ca0dd8709f99061045b845e4a6aabd91bde941 # v2.15.0
         with:
           path: './${{ matrix.addon }}'
 
@@ -85,7 +89,7 @@ jobs:
       - name: 💅🏽 Run Prettier
         uses: creyD/prettier_action@31355f8eef017f8aeba2e0bc09d8502b13dbbad1 # v4.3
         env:
-          PRETTIER_VERSION: 3.0.3 # renovate: datasource=npm depName=prettier
+          PRETTIER_VERSION: 3.1.1 # renovate: datasource=npm depName=prettier
         with:
           prettier_options: --check .
           prettier_version: ${{ env.PRETTIER_VERSION }}
@@ -139,7 +143,7 @@ jobs:
 
       - name: Build ${{ matrix.addon }} add-on
         if: steps.check.outputs.build_arch == 'true'
-        uses: home-assistant/builder@2023.09.0
+        uses: home-assistant/builder@2023.12.0
         with:
           args: |
             ${{ env.BUILD_ARGS }} \
