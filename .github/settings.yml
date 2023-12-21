@@ -11,7 +11,7 @@ branches:
   - name: main
     protection:
       required_status_checks:
-        strict: true
+        strict: false
         contexts:
           ['Check if Renovate should run', 'Initialize builds', 'Prettier', 'Renovate', 'Update Repository Settings']
       enforce_admins: true
