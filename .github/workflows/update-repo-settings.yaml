@@ -4,8 +4,9 @@ name: Update Repository Settings
 
 'on':
   push:
+    branches: [main]
   schedule:
-    - cron: '15 14 * * *' # Every day at 17:37 UTC
+    - cron: '15 14 * * *' # 14:15 UTC every day
   workflow_dispatch:
 
 concurrency:
@@ -19,12 +20,12 @@ jobs:
     name: Update Repository Settings
     runs-on: ubuntu-latest
     steps:
-      - if: github.event_name == 'push' && github.ref =='refs/heads/main'
+      - if: github.event_name == 'push'
         name: Checkout Repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - id: filter
-        if: github.event_name == 'push' && github.ref =='refs/heads/main'
+        if: github.event_name == 'push'
         name: Filter Changed Files
         uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
         with:

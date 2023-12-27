@@ -7,9 +7,8 @@ env:
 
 'on':
   push:
-    branches: [main]
   pull_request:
-    branches: [main]
+    types: [opened, synchronize]
   workflow_dispatch:
 
 concurrency:
@@ -84,6 +83,7 @@ jobs:
       - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
+          fetch-depth: 0
           ref: ${{ github.head_ref }}
 
       - name: 💅🏽 Run Prettier
@@ -91,6 +91,8 @@ jobs:
         env:
           PRETTIER_VERSION: 3.1.1 # renovate: datasource=npm depName=prettier
         with:
+          dry: true
+          only_changed: true
           prettier_options: --check .
           prettier_version: ${{ env.PRETTIER_VERSION }}
 

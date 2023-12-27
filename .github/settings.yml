@@ -12,8 +12,7 @@ branches:
     protection:
       required_status_checks:
         strict: false
-        contexts:
-          ['Check if Renovate should run', 'Initialize builds', 'Prettier', 'Renovate', 'Update Repository Settings']
+        contexts: ['Initialize builds', 'Prettier', 'Renovate']
       enforce_admins: true
       required_pull_request_reviews: null
       restrictions: null
