@@ -11,7 +11,7 @@ branches:
   - name: main
     protection:
       required_status_checks:
-        strict: false
+        strict: true
         contexts: ['Initialize builds', 'Lint add-on', 'Prettier', 'Renovate']
       enforce_admins: true
       required_pull_request_reviews: null
