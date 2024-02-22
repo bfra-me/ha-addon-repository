@@ -12,7 +12,7 @@ branches:
     protection:
       required_status_checks:
         strict: true
-        contexts: ['Initialize builds', 'Lint add-on', 'Prettier', 'Renovate']
+        contexts: ['Initialize builds', 'Lint add-on', 'Prettier', 'Renovate / Renovate']
       enforce_admins: true
       required_pull_request_reviews: null
       restrictions: null
