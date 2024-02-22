@@ -1,6 +1,6 @@
 # Update repository settings to match the definitions in .github/settings.yml.
 ---
-name: Update Repository Settings
+name: Update Repo Settings
 
 'on':
   push:
@@ -9,42 +9,8 @@ name: Update Repository Settings
     - cron: '15 14 * * *' # 14:15 UTC every day
   workflow_dispatch:
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
-
-permissions: {}
-
 jobs:
   update-repo-settings:
-    name: Update Repository Settings
-    runs-on: ubuntu-latest
-    steps:
-      - if: github.event_name == 'push'
-        name: Checkout Repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - id: filter
-        if: github.event_name == 'push'
-        name: Filter Changed Files
-        uses: dorny/paths-filter@ebc4d7e9ebcb0b1eb21480bb8f43113e996ac77a # v3.0.1
-        with:
-          filters: |
-            changes:
-              - '.github/settings.yml'
-              - '.github/workflows/update-repo-settings.yaml'
-
-      - id: get-workflow-access-token
-        if: github.event_name != 'push' || steps.filter.outputs.changes == 'true'
-        uses: peter-murray/workflow-application-token-action@dc0413987a085fa17d19df9e47d4677cf81ffef3 # v3.0.0
-        name: Get Workflow Access Token
-        with:
-          application_id: ${{ secrets.APPLICATION_ID }}
-          application_private_key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
-          permissions: 'administration:write, contents:read, issues:write'
-
-      - env:
-          GITHUB_TOKEN: ${{ steps.get-workflow-access-token.outputs.token }}
-        if: github.event_name != 'push' || steps.filter.outputs.changes == 'true'
-        name: Update Repository Settings
-        uses: elstudio/actions-settings@v3-beta
+    name: Update Repo Settings
+    secrets: inherit
+    uses: bfra-me/.github/.github/workflows/update-repo-settings.yaml@v1
