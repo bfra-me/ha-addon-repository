@@ -1,4 +1,4 @@
-# Example Home Assistant add-on repository
+# Home Assistant Add-on Repository Template
 
 This repository can be used as a "blueprint" for add-on development to help you get started.
 
@@ -39,8 +39,8 @@ Notes to developers after forking or using the github template feature:
 - Do awesome stuff!
  -->
 
-[aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg?style=flat-square
-[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg?style=flat-square
-[armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg?style=flat-square
-[armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg?style=flat-square
-[i386-shield]: https://img.shields.io/badge/i386-yes-green.svg?style=flat-square
+[aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg?style=for-the-badge
+[amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg?style=for-the-badge
+[armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg?style=for-the-badge
+[armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg?style=for-the-badge
+[i386-shield]: https://img.shields.io/badge/i386-yes-green.svg?style=for-the-badge
