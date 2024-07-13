@@ -1,6 +1,6 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  extends: ['github>bfra-me/renovate-config#v3.5.2', 'github>bfra-me/renovate-config:internal.json5#v3.5.2'],
+  extends: ['github>bfra-me/renovate-config#v3', 'github>bfra-me/renovate-config:internal.json5#v3.5.2'],
   packageRules: [
     {
       matchDatasources: ['docker'],
@@ -9,15 +9,7 @@
       groupSlug: 'home-assistant-addons',
     },
     {
-      matchPackageNames: ['hassio-addons/base'],
-      groupName: 'hassio-addons',
-    },
-    {
-      matchPackageNames: ['hassio-addons/debian-base'],
-      groupName: 'hassio-addons',
-    },
-    {
-      matchPackageNames: ['hassio-addons/ubuntu-base'],
+      matchPackagePrefixes: ['hassio-addons/'],
       groupName: 'hassio-addons',
     },
     {
@@ -43,18 +35,27 @@
   customManagers: [
     {
       customType: 'regex',
-      fileMatch: ['(^|/|\\.)build.ya?ml$'],
+      fileMatch: ['(^|/|\\.)Dockerfile$', '(^|/|\\.)build.ya?ml$'],
       matchStrings: [
         '(aarch64|amd64|armhf|armv7|i386):\\s+["\']?(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?(?:@(?<currentDigest>sha256:[a-f0-9]+))?["\']?\\s',
+        'ARG BUILD_FROM=(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?(?:@(?<currentDigest>sha256:[a-f0-9]+))?\\s',
       ],
       datasourceTemplate: 'docker',
     },
     {
       customType: 'regex',
-      fileMatch: ['(^|/|\\.)build.ya?ml$'],
+      fileMatch: ['(^|/|\\.)Dockerfile$', '(^|/|\\.)build.ya?ml$'],
       matchStrings: [
         '# renovate: datasource=(?<datasource>[a-z-]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[a-z-0-9]+?))?\\s+[A-Za-z0-9_]+?_VERSION\\s*:\\s*["\']?(?<currentValue>.+?)["\']?\\s',
       ],
+    },
+    {
+      customType: 'regex',
+      fileMatch: ['(^|/|\\.)Dockerfile$'],
+      matchStrings: ['\\s\\s(?<package>[a-z0-9-]+)=(?<currentValue>[a-z0-9_.-]+)\\s+'],
+      versioningTemplate: 'loose',
+      datasourceTemplate: 'repology',
+      depNameTemplate: 'alpine_3_20/{{package}}',
     },
     {
       customType: 'regex',
