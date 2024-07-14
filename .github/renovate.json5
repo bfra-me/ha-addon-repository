@@ -9,13 +9,8 @@
       groupSlug: 'home-assistant-addons',
     },
     {
-      matchPackagePrefixes: ['hassio-addons/'],
+      matchPackagePrefixes: ['ghcr.io/hassio-addons/', 'hassio-addons/'],
       groupName: 'hassio-addons',
-    },
-    {
-      matchManagers: ['github-actions'],
-      matchPackagePrefixes: ['frenck/'],
-      versioning: 'loose',
     },
     {
       matchDepPatterns: ['^home-assistant/actions(\\/.*)?$'],
@@ -35,7 +30,7 @@
   customManagers: [
     {
       customType: 'regex',
-      fileMatch: ['(^|/|\\.)Dockerfile$', '(^|/|\\.)build.ya?ml$'],
+      fileMatch: ['(^|/|\\.)build.ya?ml$'],
       matchStrings: [
         '(aarch64|amd64|armhf|armv7|i386):\\s+["\']?(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?(?:@(?<currentDigest>sha256:[a-f0-9]+))?["\']?\\s',
         'ARG BUILD_FROM=(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?(?:@(?<currentDigest>sha256:[a-f0-9]+))?\\s',
@@ -56,19 +51,6 @@
       versioningTemplate: 'loose',
       datasourceTemplate: 'repology',
       depNameTemplate: 'alpine_3_20/{{package}}',
-    },
-    {
-      customType: 'regex',
-      fileMatch: ['^\\.github/(?:workflows|actions)/.+\\.ya?ml$'],
-      matchStrings: [
-        'uses:\\s+(?<depName>home-assistant\\/actions(?<path>\\/.*)?)@(?<currentDigest>[a-f0-9]+)',
-        'uses:\\s+(?<depName>home-assistant\\/actions(?<path>\\/.*)?)@(?<currentValue>master)',
-      ],
-      currentValueTemplate: 'master',
-      autoReplaceStringTemplate: 'uses: {{depName}}@{{#if newDigest}}{{newDigest}}{{#if newValue}} # {{newValue}}{{/if}}{{/if}}{{#unless newDigest}}{{newValue}}{{/unless}}',
-      packageNameTemplate: 'https://github.com/home-assistant/actions',
-      depTypeTemplate: 'action',
-      datasourceTemplate: 'git-refs',
     },
   ],
 }
