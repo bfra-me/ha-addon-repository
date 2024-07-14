@@ -105,6 +105,9 @@ jobs:
     name: Lint
     needs: [lint-addon, lint-prettier]
     runs-on: ubuntu-latest
+    steps:
+      - name: Complete
+        run: echo "Lint completed"
 
   build-addon:
     needs: [lint, prepare]
@@ -169,3 +172,6 @@ jobs:
     name: Build
     needs: [build-addon]
     runs-on: ubuntu-latest
+    steps:
+      - name: Complete
+        run: echo "Build completed"
