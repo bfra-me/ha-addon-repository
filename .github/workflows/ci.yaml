@@ -6,19 +6,19 @@ env:
   MONITORED_FILES: 'apparmor.txt build.yaml config.yaml Dockerfile rootfs'
 
 'on':
-  push:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, reopened, synchronize]
+  push:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  init:
+  prepare:
     runs-on: ubuntu-latest
-    name: Initialize builds
+    name: Prepare
     outputs:
       changed_addons: ${{ steps.changed_addons.outputs.addons }}
       changed: ${{ steps.changed_addons.outputs.changed }}
@@ -65,13 +65,13 @@ jobs:
           fi
 
   lint-addon:
-    if: needs.init.outputs.changed == 'true'
-    name: Lint add-on
-    needs: init
+    if: needs.prepare.outputs.changed == 'true'
+    name: Lint add-on ${{ matrix.addon }}
+    needs: prepare
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        addon: ${{ fromJson(needs.init.outputs.changed_addons) }}
+        addon: ${{ fromJson(needs.prepare.outputs.changed_addons) }}
     steps:
       - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
@@ -101,14 +101,19 @@ jobs:
           prettier_options: --check .
           prettier_version: ${{ env.PRETTIER_VERSION }}
 
-  build:
-    needs: init
+  lint:
+    name: Lint
+    needs: [lint-addon, lint-prettier]
     runs-on: ubuntu-latest
-    if: needs.init.outputs.changed == 'true'
-    name: Build ${{ matrix.arch }} ${{ matrix.addon }} add-on
+
+  build-addon:
+    needs: [lint, prepare]
+    runs-on: ubuntu-latest
+    if: needs.prepare.outputs.changed == 'true'
+    name: Build add-on ${{ matrix.addon }}-${{ matrix.arch }}
     strategy:
       matrix:
-        addon: ${{ fromJson(needs.init.outputs.changed_addons) }}
+        addon: ${{ fromJson(needs.prepare.outputs.changed_addons) }}
         arch: ['aarch64', 'amd64', 'armhf', 'armv7', 'i386']
 
     steps:
@@ -159,3 +164,8 @@ jobs:
             --image "${{ steps.check.outputs.image }}" \
             --docker-hub "ghcr.io/${{ github.repository_owner }}" \
             --addon
+
+  build:
+    name: Build
+    needs: [build-addon]
+    runs-on: ubuntu-latest
