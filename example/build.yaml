@@ -10,6 +10,3 @@ labels:
   org.opencontainers.image.description: 'Example add-on to use as a blueprint for new add-ons.'
   org.opencontainers.image.source: 'https://github.com/bfra-me/ha-addon-repository'
   org.opencontainers.image.licenses: 'Apache License 2.0'
-args:
-  # renovate: datasource=github-releases depName=home-assistant/tempio versioning=loose
-  TEMPIO_VERSION: 2021.09.0
