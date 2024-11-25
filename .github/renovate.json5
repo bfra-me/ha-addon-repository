@@ -1,19 +1,19 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  extends: ['github>bfra-me/renovate-config#v3', 'github>bfra-me/renovate-config:internal.json5#v3.5.2'],
+  extends: ['github>bfra-me/renovate-config#v3', 'github>bfra-me/renovate-config:internal.json5#v3'],
   packageRules: [
     {
       matchDatasources: ['docker'],
-      matchPackagePrefixes: ['ghcr.io/home-assistant/', 'home-assistant/'],
+      matchPackageNames: ['ghcr.io/home-assistant/{/,}**', 'home-assistant/{/,}**'],
       groupName: 'Home Assistant Add-ons',
       groupSlug: 'home-assistant-addons',
     },
     {
-      matchPackagePrefixes: ['ghcr.io/hassio-addons/', 'hassio-addons/'],
+      matchPackageNames: ['ghcr.io/hassio-addons/{/,}**', 'hassio-addons/{/,}**'],
       groupName: 'hassio-addons',
     },
     {
-      matchDepPatterns: ['^home-assistant/actions(\\/.*)?$'],
+      matchDepNames: ['/^home-assistant/actions(\\/.*)?$/'],
       groupName: 'Home Assistant Actions',
     },
     {
