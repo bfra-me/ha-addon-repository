@@ -9,6 +9,9 @@ name: Update Repo Settings
     - cron: '15 14 * * *' # 14:15 UTC every day
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   update-repo-settings:
     name: Update Repo Settings
