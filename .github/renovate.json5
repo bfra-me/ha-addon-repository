@@ -4,17 +4,17 @@
   packageRules: [
     {
       matchDatasources: ['docker'],
+      matchPackageNames: ['ghcr.io/home-assistant/{/,}**', 'home-assistant/{/,}**'],
       groupName: 'Home Assistant Add-ons',
       groupSlug: 'home-assistant-addons',
-      matchPackageNames: ['ghcr.io/home-assistant/{/,}**', 'home-assistant/{/,}**'],
     },
     {
-      groupName: 'hassio-addons',
       matchPackageNames: ['ghcr.io/hassio-addons/{/,}**', 'hassio-addons/{/,}**'],
+      groupName: 'hassio-addons',
     },
     {
-      groupName: 'Home Assistant Actions',
       matchDepNames: ['/^home-assistant/actions(\\/.*)?$/'],
+      groupName: 'Home Assistant Actions',
     },
     {
       matchPackageNames: ['home-assistant/builder'],
