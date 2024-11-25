@@ -42,6 +42,10 @@
       matchUpdateTypes: ['major'],
       updatePinnedDependencies: true,
     },
+    {
+      matchDepNames: ['python'],
+      allowedVersions: '<=3.12',
+    },
   ],
   customManagers: [
     {
