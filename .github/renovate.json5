@@ -33,12 +33,12 @@
     },
     {
       description: 'Enable SemVer digest pinning of @bfra-me GitHub actions, reusable workflows, and Renovate config presets.',
-      matchPackageNames: ['@bfra.me/**', 'bfra-me/**'],
+      matchPackageNames: ['@bfra.me/{/,}**', 'bfra-me/{/,}**'],
       updatePinnedDependencies: false,
     },
     {
       description: 'Enable SemVer digest pinning of @bfra-me GitHub actions, reusable workflows, and Renovate config presets.',
-      matchPackageNames: ['@bfra.me/**', 'bfra-me/**'],
+      matchPackageNames: ['@bfra.me/{/,}**', 'bfra-me/{/,}**'],
       matchUpdateTypes: ['major'],
       updatePinnedDependencies: true,
     },
