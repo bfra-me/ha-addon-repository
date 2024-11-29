@@ -3,7 +3,7 @@ ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:3.20@sha256:f41b6c04af6cb47a048
 FROM ${BUILD_FROM}
 
 # renovate: datasource=github-releases depName=home-assistant/tempio versioning=loose
-ARG TEMPIO_VERSION=2021.09.0
+ARG TEMPIO_VERSION=2024.11.2
 
 ARG BUILD_ARCH
 
