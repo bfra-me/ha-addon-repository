@@ -41,8 +41,7 @@
       customType: 'regex',
       fileMatch: ['(^|/|\\.)build.ya?ml$'],
       matchStrings: [
-        '(aarch64|amd64|armhf|armv7|i386):\\s+["\']?(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))["\']?\\s',
-        '(aarch64|amd64|armhf|armv7|i386):\\s+["\']?(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))(?:@(?<currentDigest>sha256:[a-f0-9]+))?["\']?\\s',
+        '(aarch64|amd64|armhf|armv7|i386):\\s+["\']?(?<depName>[a-z0-9.\\/-]+)(?::(?<currentValue>[a-z0-9.-]+))?["\']?\\s',
         '# renovate: datasource=(?<datasource>[a-z-]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[a-z-0-9]+?))?\\s+[A-Za-z0-9_]+?_VERSION\\s*:\\s*["\']?(?<currentValue>.+?)["\']?\\s',
       ],
       datasourceTemplate: 'docker',
