@@ -1,8 +1,8 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
   extends: [
-    'github>bfra-me/renovate-config#v3.12.0',
-    'github>bfra-me/renovate-config:internal.json5#v3.12.0',
+    'github>bfra-me/renovate-config#v3.12.1',
+    'github>bfra-me/renovate-config:internal.json5#v3.12.1',
     ':enablePreCommit',
   ],
   automergeType: 'pr',
