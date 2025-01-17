@@ -12,6 +12,7 @@
       matchPackageNames: ['ghcr.io/home-assistant/{/,}**', 'home-assistant/{/,}**'],
       groupName: 'Home Assistant Add-ons',
       groupSlug: 'home-assistant-addons',
+      pinDigests: false,
     },
     {
       matchPackageNames: ['ghcr.io/hassio-addons/{/,}**', 'hassio-addons/{/,}**'],
@@ -33,7 +34,7 @@
     },
     {
       matchDepNames: ['python'],
-      allowedVersions: '<=3.12',
+      allowedVersions: '<=3.13',
     },
   ],
   customManagers: [
