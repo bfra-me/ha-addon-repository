@@ -159,19 +159,21 @@ jobs:
           version=""
 
           for ext in json yml yaml; do
-            if [[ -f "${addon-path}/build.${ext}" ]]; then
-              archs=$(yq e -N -M '.build_from | keys' -o=json -I=0 "${addon-path}/build.${ext}")
+            if [[ -f "${{ env.addon }}/build.${ext}" ]]; then
+              archs=$(yq e -N -M '.build_from | keys' -o=json -I=0 "${{ env.addon }}/build.${ext}")
               break
-            elif [[ -f "${addon-path}/config.${ext}" ]]; then
-              archs=$(yq e -N -M '.arch' -o=json -I=0 "${addon-path}/config.${ext}")
+            elif [[ -f "${{ env.addon }}/config.${ext}" ]]; then
+              archs=$(yq e -N -M '.arch' -o=json -I=0 "${{ env.addon }}/config.${ext}")
               break
+            else
+              echo "No build.${ext} or config.${ext} found in ${{ env.addon }}"
             fi
           done
 
           for ext in json yml yaml; do
-            if [[ -f "${addon-path}/config.${ext}" ]]; then
-              image=$(yq e -N -M '.image' -o=json -I=0 "${addon-path}/config.${ext}")
-              version=$(yq e -N -M '.version' -o=json -I=0 "${addon-path}/config.${ext}")
+            if [[ -f "${{ env.addon }}/config.${ext}" ]]; then
+              image=$(yq e -N -M '.image' -o=json -I=0 "${{ env.addon }}/config.${ext}")
+              version=$(yq e -N -M '.version' -o=json -I=0 "${{ env.addon }}/config.${ext}")
               break
             fi
           done
@@ -184,7 +186,7 @@ jobs:
           echo "image=$image" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
         env:
-          addon-path: './${{ matrix.addon }}'
+          addon: ${{ matrix.addon }}
 
       - name: Check if add-on is being built for architecture
         id: check
