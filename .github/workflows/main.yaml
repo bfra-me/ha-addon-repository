@@ -167,8 +167,6 @@ jobs:
             elif [[ -f "${{ env.addon }}/config.${ext}" ]]; then
               archs=$(yq e -N -M '.arch' -o=json -I=0 "${{ env.addon }}/config.${ext}")
               break
-            else
-              echo "No build.${ext} or config.${ext} found in ${{ env.addon }}"
             fi
           done
 
