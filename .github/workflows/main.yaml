@@ -1,10 +1,6 @@
 ---
 name: Main
 
-env:
-  BUILD_ARGS: '--test'
-  MONITORED_FILES: 'apparmor.txt build.yaml config.yaml Dockerfile rootfs'
-
 'on':
   pull_request:
     branches: [main]
@@ -20,10 +16,16 @@ concurrency:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: bash --noprofile --norc -Eeuo pipefail {0}
+
 jobs:
   prepare:
     runs-on: ubuntu-latest
     name: Prepare
+    env:
+      MONITORED_FILES: 'apparmor.txt build.yaml config.yaml Dockerfile rootfs'
     outputs:
       changed_addons: ${{ steps.changed_addons.outputs.addons }}
       changed: ${{ steps.changed_addons.outputs.changed }}
@@ -31,32 +33,47 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Find add-on directories
+        id: addons
+        run: |
+          declare -a addons
+          declare -a addons_list
+          declare -a filters
+
+          for addon in $(find ./ -maxdepth 2 -name config.json -o -name config.yaml -o -name config.yml | cut -d "/" -f2 | sort -u); do
+            addons+=("${addon}");
+            addons_list+=("\"${addon}\",");
+            for file in ${{ env.MONITORED_FILES }}; do
+              filters+=("\"${addon}/${file}\",");
+            done
+          done
+
+          json_list=$(echo ${addons_list[@]} | rev | cut -c 2- | rev)
+          filter_list=$(echo ${filters[@]} | rev | cut -c 2- | rev)
+
+          echo "Found addons: ${addons[@]}"
+          echo "Found addons (JSON): [${json_list}]"
+          echo "addons=${addons[@]}" >> "$GITHUB_OUTPUT"
+          echo "addons_list=[${json_list}]" >> "$GITHUB_OUTPUT"
+          echo "filters=[${filter_list}]" >> "$GITHUB_OUTPUT"
+
       - name: Get changed files
-        id: changed_files
+        id: filter
         uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         with:
           filters: |
-            changed:
-              - '**'
+            changed: ${{ steps.addons.outputs.filters }}
           list-files: shell
-
-      - name: Find add-on directories
-        id: addons
-        uses: home-assistant/actions/helpers/find-addons@b227dff9ccf75101173b686878bc63852de8ea46 # master
 
       - name: Get changed add-ons
         id: changed_addons
         run: |
           declare -a changed_addons
           for addon in ${{ steps.addons.outputs.addons }}; do
-            if [[ "${{ steps.changed_files.outputs.changed_files }}" =~ $addon ]]; then
-              for file in ${{ env.MONITORED_FILES }}; do
-                  if [[ "${{ steps.changed_files.outputs.changed_files }}" =~ $addon/$file ]]; then
-                    if [[ ! "${changed_addons[@]}" =~ $addon ]]; then
-                      changed_addons+=("\"${addon}\",");
-                    fi
-                  fi
-              done
+            if [[ "${{ steps.filter.outputs.changed_files }}" =~ $addon ]]; then
+              if [[ ! "${changed_addons[@]}" =~ $addon ]]; then
+                changed_addons+=("\"${addon}\",");
+              fi
             fi
           done
 
@@ -66,7 +83,7 @@ jobs:
             echo "changed=true" >> $GITHUB_OUTPUT;
             echo "addons=[$changed]" >> $GITHUB_OUTPUT;
           else
-            echo "No add-on had any monitored files changed (${{ env.MONITORED_FILES }})";
+            echo "No addon had changes that require linting and building";
           fi
 
   lint-addon:
@@ -115,10 +132,13 @@ jobs:
         run: echo "Lint completed"
 
   build-addon:
-    needs: [lint, prepare]
+    needs: [prepare]
     runs-on: ubuntu-latest
     if: needs.prepare.outputs.changed == 'true'
     name: Build add-on ${{ matrix.addon }}-${{ matrix.arch }}
+    env:
+      BUILD_ARGS: '--test'
+
     strategy:
       matrix:
         addon: ${{ fromJson(needs.prepare.outputs.changed_addons) }}
@@ -128,18 +148,46 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Get information
-        id: info
-        uses: home-assistant/actions/helpers/info@b227dff9ccf75101173b686878bc63852de8ea46 # master
-        with:
-          path: './${{ matrix.addon }}'
+      - name: Setup yq
+        uses: chrisdickinson/setup-yq@fa3192edd79d6eb0e4e12de8dde3a0c26f2b853b
+
+      - name: Get metadata
+        id: metadata
+        run: |
+          declare -a archs
+          declare image
+          declare version
+
+          for ext in json yml yaml; do
+            if [[ -f "${addon-path}/build.${ext}" ]]; then
+              archs=$(yq e -N -M '.build_from | keys' -o=json -I=0 "${addon-path}/build.${ext}")
+              break
+            elif [[ -f "${addon-path}/config.${ext}" ]]; then
+              archs=$(yq e -N -M '.arch' -o=json -I=0 "${addon-path}/config.${ext}")
+              break
+            fi
+            if [[ -f "${addon-path}/config.${ext}" ]]; then
+              image=$(yq e -N -M '.image' -o=json -I=0 "${addon-path}/config.${ext}")
+              version=$(yq e -N -M '.version' -o=json -I=0 "${addon-path}/config.${ext}")
+            fi
+          done
+
+          echo "Architectures: $archs"
+          echo "Image: $image"
+          echo "Version: $version"
+
+          echo "architectures=$archs" >> "$GITHUB_OUTPUT"
+          echo "image=$image" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+        env:
+          addon-path: './${{ matrix.addon }}'
 
       - name: Check if add-on is being built for architecture
         id: check
         run: |
-          if [[ "${{ steps.info.outputs.architectures }}" =~ ${{ matrix.arch }} ]]; then
+          if [[ "${{ steps.metadata.outputs.architectures }}" =~ ${{ matrix.arch }} ]]; then
             echo "build_arch=true" >> $GITHUB_OUTPUT;
-            echo "image=$(echo ${{ steps.info.outputs.image }} | cut -d'/' -f3)" >> $GITHUB_OUTPUT;
+            echo "image=$(echo ${{ steps.metadata.outputs.image }} | cut -d'/' -f3)" >> $GITHUB_OUTPUT;
           else
             echo "${{ matrix.arch }} is not a valid arch for ${{ matrix.addon }}, skipping build";
           fi
