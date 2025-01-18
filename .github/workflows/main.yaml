@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Prepare
     env:
-      MONITORED_FILES: 'apparmor.txt build.yaml config.yaml Dockerfile rootfs'
+      MONITORED_FILES: 'apparmor.txt build.yaml config.yaml Dockerfile rootfs/**'
     outputs:
       changed_addons: ${{ steps.changed_addons.outputs.addons }}
       changed: ${{ steps.changed_addons.outputs.changed }}
