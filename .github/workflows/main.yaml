@@ -166,9 +166,13 @@ jobs:
               archs=$(yq e -N -M '.arch' -o=json -I=0 "${addon-path}/config.${ext}")
               break
             fi
+          done
+
+          for ext in json yml yaml; do
             if [[ -f "${addon-path}/config.${ext}" ]]; then
               image=$(yq e -N -M '.image' -o=json -I=0 "${addon-path}/config.${ext}")
               version=$(yq e -N -M '.version' -o=json -I=0 "${addon-path}/config.${ext}")
+              break
             fi
           done
 
