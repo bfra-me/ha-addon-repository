@@ -154,9 +154,9 @@ jobs:
       - name: Get metadata
         id: metadata
         run: |
-          declare -a archs
-          declare image
-          declare version
+          archs=[]
+          image=""
+          version=""
 
           for ext in json yml yaml; do
             if [[ -f "${addon-path}/build.${ext}" ]]; then
