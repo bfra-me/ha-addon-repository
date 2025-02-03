@@ -1,0 +1,10 @@
+---
+config:
+  MD013: false
+  MD033:
+    allowed_elements: [a, code, h3, img, p]
+  MD041: false
+
+globs:
+- '!.cursorrules'
+- '!.github'

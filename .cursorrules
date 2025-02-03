@@ -1,0 +1,228 @@
+# Home Assistant Add-on Repository AI Rules
+# Version: 1.0.0
+
+## Base Layer (Universal Constants)
+
+### Quality Standards
+```typescript
+interface QualityStandards {
+  documentation: {
+    required: [
+      'README.md',
+      'DOCS.md',
+      'CHANGELOG.md',
+      'translations/*.yaml'
+    ];
+    standards: 'home-assistant/documentation-standards';
+  };
+
+  codeQuality: {
+    preCommit: {
+      hooks: [
+        'prettier',
+        'markdownlint',
+        'shellcheck',
+        'yamllint'
+      ];
+    };
+    linting: {
+      markdown: '.markdownlint-cli2.yaml';
+      yaml: true;
+      shell: true;
+      docker: true;
+    };
+  };
+
+  security: {
+    appArmor: {
+      required: true;
+      profile: 'strict';
+      location: '{addon}/apparmor.txt';
+    };
+    baseImage: {
+      source: 'ghcr.io/home-assistant';
+      pinning: 'required';
+      updates: 'automated';
+    };
+  };
+}
+```
+
+### Architecture Rules
+```typescript
+interface AddonArchitecture {
+  type: 'addon';
+  base: {
+    image: string;
+    version: string;
+    architectures: ['aarch64', 'amd64', 'armhf', 'armv7'];
+  };
+  init: boolean;
+  services: {
+    main: {
+      run: string;
+      finish?: string;
+    };
+    healthcheck?: {
+      interval: string;
+      timeout: string;
+      retries: number;
+    };
+  }[];
+  mappings?: string[];
+}
+```
+
+## Flexible Layer (Project-Specific)
+
+### Build Standards
+```typescript
+interface BuildStandards {
+  docker: {
+    multiStage: 'recommended';
+    layerOptimization: 'required';
+    labels: 'opencontainers';
+    buildArgs: {
+      BUILD_ARCH: string;
+      BUILD_DATE: string;
+      BUILD_DESCRIPTION: string;
+      BUILD_NAME: string;
+      BUILD_REF: string;
+      BUILD_REPOSITORY: string;
+      BUILD_VERSION: string;
+    };
+  };
+
+  s6Overlay: {
+    required: true;
+    version: '>=3.0.0';
+    services: {
+      definition: '/etc/services.d/{service}';
+      logging: 'bashio';
+    };
+  };
+}
+```
+
+### Development Environment
+```typescript
+interface DevelopmentEnvironment {
+  devcontainer: {
+    required: true;
+    features: [
+      'docker-in-docker',
+      'ghcr.io/home-assistant/devcontainer-features/ha'
+    ];
+    extensions: [
+      'esbenp.prettier-vscode',
+      'davidanson.vscode-markdownlint',
+      'timonwong.shellcheck'
+    ];
+  };
+
+  tooling: {
+    asdf: {
+      required: true;
+      tools: [
+        'nodejs',
+        'python'
+      ];
+    };
+    preCommit: {
+      required: true;
+      hooks: [
+        'trailing-whitespace',
+        'end-of-file-fixer',
+        'check-yaml',
+        'check-added-large-files'
+      ];
+    };
+  };
+}
+```
+
+## Validation Strategies
+
+### Quality Gates
+```typescript
+interface QualityGates {
+  ci: {
+    required: [
+      'lint',
+      'build',
+      'test',
+      'security-scan'
+    ];
+    architectures: ['aarch64', 'amd64', 'armhf', 'armv7'];
+  };
+
+  release: {
+    versioning: 'semver';
+    changelog: 'required';
+    artifacts: [
+      'addon-config',
+      'docker-image',
+      'documentation'
+    ];
+  };
+}
+```
+
+### AI Agent Instructions
+
+#### Code Analysis
+- Verify addon configuration against Home Assistant standards
+- Check multi-architecture support in Dockerfile
+- Validate S6-overlay service definitions
+- Ensure proper error handling with bashio
+
+#### Documentation
+- Maintain consistent documentation structure
+- Update changelogs with semantic versioning
+- Generate translation files for configuration
+- Keep README.md and DOCS.md synchronized
+
+#### Security
+- Verify AppArmor profiles
+- Ensure secure base image usage
+- Validate access permissions and mappings
+- Check for proper secret handling
+
+#### Development Support
+- Assist with devcontainer configuration
+- Provide CI/CD pipeline improvements
+- Help with multi-architecture testing
+- Guide through addon submission process
+
+## Error Handling
+```typescript
+interface ErrorHandling {
+  logging: {
+    tool: 'bashio';
+    levels: ['debug', 'info', 'warning', 'error'];
+    format: 'structured';
+  };
+
+  recovery: {
+    required: true;
+    strategies: [
+      'graceful-shutdown',
+      'automatic-restart',
+      'state-preservation'
+    ];
+  };
+}
+```
+
+## Adaptation Rules
+```typescript
+interface AdaptationRules {
+  projectScope: 'home-assistant-addon';
+  compliance: 'required';
+  flexibility: {
+    configuration: 'medium';
+    implementation: 'high';
+    testing: 'medium';
+  };
+}
+```
