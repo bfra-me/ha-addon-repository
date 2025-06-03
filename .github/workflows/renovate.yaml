@@ -8,24 +8,30 @@ name: Renovate
   pull_request:
     types: [edited]
   push:
-    branches: ['**']
+    branches-ignore: [main]
   workflow_dispatch:
     inputs:
+      log-level:
+        description: Log level for Renovate
+        required: false
+        type: string
+        default: debug
       print-config:
         description: Log the fully-resolved Renovate config for each repository, plus fully-resolved presets.
         required: false
         type: boolean
         default: false
   workflow_run:
-    workflows: ['Main']
-    branches: ['main']
-    types: ['completed']
+    workflows: [Main]
+    branches: [main]
+    types: [completed]
 
 jobs:
   renovate:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     name: Renovate
     secrets: inherit
-    uses: bfra-me/.github/.github/workflows/renovate.yaml@v2
+    uses: bfra-me/.github/.github/workflows/renovate.yaml@6b6336a0dc5bb8316868520ca6203489f1d4c10e # v3.0.1
     with:
-      print_config: ${{ inputs.print-config || false }}
+      log-level: ${{ inputs.log-level || (github.event_name == 'pull_request' || github.ref_name != github.event.repository.default_branch) && 'debug' || 'info' }}
+      print-config: ${{ inputs.print-config || false }}
