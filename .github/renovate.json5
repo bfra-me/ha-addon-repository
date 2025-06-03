@@ -64,6 +64,6 @@
       depNameTemplate: 'alpine_3_20/{{package}}',
     },
   ],
-  prCreation: 'not-pending',
-  rebaseWhen: 'auto',
+  prCreation: 'immediate',
+  rebaseWhen: 'behind-base-branch',
 }
