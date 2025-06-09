@@ -114,7 +114,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: 💅🏽 Run Prettier
-        uses: creyD/prettier_action@5e54c689403b43aac746a34c07656fd4cb71d822 # v4.5
+        uses: creyD/prettier_action@8c18391fdc98ed0d884c6345f03975edac71b8f0 # v4.6
         env:
           PRETTIER_VERSION: 3.5.3 # renovate: datasource=npm depName=prettier
         with:
