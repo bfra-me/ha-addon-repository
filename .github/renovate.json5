@@ -1,11 +1,6 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  extends: [
-    'github>bfra-me/renovate-config#v3.14.10',
-    'github>bfra-me/renovate-config:internal.json5#v3.14.10',
-    ':enablePreCommit',
-  ],
-  automergeType: 'pr',
+  extends: ['github>bfra-me/renovate-config#v4.1.0', ':enablePreCommit'],
   packageRules: [
     {
       matchDatasources: ['docker'],
@@ -64,6 +59,4 @@
       depNameTemplate: 'alpine_3_20/{{package}}',
     },
   ],
-  prCreation: 'immediate',
-  rebaseWhen: 'behind-base-branch',
 }
