@@ -1,5 +1,5 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-dockerfile
-ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:3.22@sha256:afa8a0a7845fe05bafc451d82f9f3a5e908310e9e667a6a9618e5eddd4405c50
+ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:3.22@sha256:c4f0bc7b0e678cc9231c82be0ac51e13830fe0c46ba9789da5132bde799a5872
 FROM ${BUILD_FROM}
 
 # renovate: datasource=github-releases depName=home-assistant/tempio versioning=loose
