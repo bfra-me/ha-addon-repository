@@ -1,6 +1,6 @@
 {
   $schema: 'https://docs.renovatebot.com/renovate-schema.json',
-  extends: ['github>bfra-me/renovate-config#5.0.1', ':enablePreCommit'],
+  extends: ['github>bfra-me/renovate-config#5.0.2', ':enablePreCommit'],
   packageRules: [
     {
       matchDatasources: ['docker'],
