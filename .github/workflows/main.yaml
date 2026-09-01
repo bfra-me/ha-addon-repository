@@ -209,13 +209,42 @@ jobs:
           prettier_options: --check .
           prettier_version: ${{ env.PRETTIER_VERSION }}
 
-  lint:
-    name: Lint
-    needs: [lint-addon, lint-prettier]
+  release-integrity:
+    name: Release integrity
     runs-on: ubuntu-latest
     steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref || github.ref }}
+
+      - name: Validate release metadata
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: .github/scripts/release-integrity.sh
+
+  lint:
+    name: Lint
+    if: always()
+    needs: [lint-addon, lint-prettier, release-integrity]
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
       - name: Complete
-        run: echo "Lint completed"
+        env:
+          LINT_ADDON_RESULT: ${{ needs.lint-addon.result }}
+          LINT_PRETTIER_RESULT: ${{ needs.lint-prettier.result }}
+          RELEASE_INTEGRITY_RESULT: ${{ needs.release-integrity.result }}
+        run: |
+          for result in "$LINT_ADDON_RESULT" "$LINT_PRETTIER_RESULT" "$RELEASE_INTEGRITY_RESULT"; do
+            if [[ "$result" != "success" && "$result" != "skipped" ]]; then
+              echo "A lint job failed: $result" >&2
+              exit 1
+            fi
+          done
+          echo "Lint completed"
 
   build-addon:
     needs: [prepare]
