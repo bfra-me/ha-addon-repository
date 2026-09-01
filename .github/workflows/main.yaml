@@ -29,7 +29,7 @@ jobs:
       changed: ${{ steps.changed_addons.outputs.changed }}
     steps:
       - name: Check out the repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Find add-on directories
         id: addons
@@ -108,7 +108,7 @@ jobs:
         addon: ${{ fromJson(needs.prepare.outputs.changed_addons) }}
     steps:
       - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: 🚀 Run Home Assistant Add-on Lint
         uses: frenck/action-addon-linter@f995494fd84fae6310d23617e66d0e37de4f14eb # v2.21.0
@@ -120,7 +120,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ Check out code from GitHub
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
@@ -162,7 +162,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Get metadata
         id: metadata
