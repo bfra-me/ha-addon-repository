@@ -56,7 +56,7 @@
       matchStrings: ['\\s\\s(?<package>[a-z0-9-]+)=(?<currentValue>[a-z0-9_.-]+)\\s+'],
       versioningTemplate: 'loose',
       datasourceTemplate: 'repology',
-      depNameTemplate: 'alpine_3_20/{{package}}',
+      depNameTemplate: 'alpine_3_24/{{package}}',
     },
   ],
 }

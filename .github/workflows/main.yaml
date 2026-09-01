@@ -24,8 +24,6 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     name: Prepare
-    env:
-      MONITORED_FILES: 'apparmor.txt build.yaml config.yaml Dockerfile rootfs/**'
     outputs:
       changed_addons: ${{ steps.changed_addons.outputs.addons }}
       changed: ${{ steps.changed_addons.outputs.changed }}
@@ -35,6 +33,8 @@ jobs:
 
       - name: Find add-on directories
         id: addons
+        env:
+          MONITORED_FILES: 'apparmor.txt build.yaml config.yaml Dockerfile rootfs/**'
         run: |
           declare -a addons
           declare -a addons_list
@@ -43,7 +43,7 @@ jobs:
           for addon in $(find ./ -maxdepth 2 -name config.json -o -name config.yaml -o -name config.yml | cut -d "/" -f2 | sort -u); do
             addons+=("${addon}");
             addons_list+=("\"${addon}\",");
-            for file in ${{ env.MONITORED_FILES }}; do
+            for file in $MONITORED_FILES; do
               filters+=("\"${addon}/${file}\",");
             done
           done
@@ -63,25 +63,37 @@ jobs:
         with:
           filters: |
             changed: ${{ steps.addons.outputs.filters }}
-          list-files: shell
+          list-files: json
 
       - name: Get changed add-ons
         id: changed_addons
+        env:
+          ADDONS: ${{ steps.addons.outputs.addons }}
+          CHANGED_FILES: ${{ steps.filter.outputs.changed_files }}
         run: |
-          declare -a changed_addons
-          for addon in ${{ steps.addons.outputs.addons }}; do
-            if [[ "${{ steps.filter.outputs.changed_files }}" =~ $addon ]]; then
-              if [[ ! "${changed_addons[@]}" =~ $addon ]]; then
-                changed_addons+=("\"${addon}\",");
-              fi
-            fi
-          done
+          declare -A seen=()
+          declare -a addons=()
+          declare -a changed_addons=()
 
-          changed=$(echo ${changed_addons[@]} | rev | cut -c 2- | rev)
-          if [[ -n ${changed} ]]; then
+          read -r -a addons <<< "$ADDONS"
+          while IFS= read -r file; do
+            addon=${file%%/*}
+            for candidate in "${addons[@]+"${addons[@]}"}"; do
+              if [[ "$addon" == "$candidate" ]]; then
+                if [[ -z ${seen["$candidate"]+_} ]]; then
+                  seen["$candidate"]=1
+                  changed_addons+=("$candidate")
+                fi
+                break
+              fi
+            done
+          done < <(jq -r '.[]' <<< "$CHANGED_FILES")
+
+          changed=$(jq -cn --args '$ARGS.positional' "${changed_addons[@]+"${changed_addons[@]}"}")
+          if [[ "$changed" != '[]' ]]; then
             echo "Changed add-ons: $changed";
-            echo "changed=true" >> $GITHUB_OUTPUT;
-            echo "addons=[$changed]" >> $GITHUB_OUTPUT;
+            echo "changed=true" >> "$GITHUB_OUTPUT";
+            echo "addons=$changed" >> "$GITHUB_OUTPUT";
           else
             echo "No addon had changes that require linting and building";
           fi
@@ -152,32 +164,29 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Setup yq
-        uses: chrisdickinson/setup-yq@fa3192edd79d6eb0e4e12de8dde3a0c26f2b853b
-        with:
-          yq-version: v4.45.1
-
       - name: Get metadata
         id: metadata
+        env:
+          ADDON: ${{ matrix.addon }}
         run: |
           archs=[]
           image=""
           version=""
 
           for ext in json yml yaml; do
-            if [[ -f "${{ env.addon }}/build.${ext}" ]]; then
-              archs=$(yq e -N -M '.build_from | keys' -o=json -I=0 "${{ env.addon }}/build.${ext}")
+            if [[ -f "$ADDON/build.${ext}" ]]; then
+              archs=$(yq e -N -M '.build_from | keys' -o=json -I=0 "$ADDON/build.${ext}")
               break
-            elif [[ -f "${{ env.addon }}/config.${ext}" ]]; then
-              archs=$(yq e -N -M '.arch' -o=json -I=0 "${{ env.addon }}/config.${ext}")
+            elif [[ -f "$ADDON/config.${ext}" ]]; then
+              archs=$(yq e -N -M '.arch' -o=json -I=0 "$ADDON/config.${ext}")
               break
             fi
           done
 
           for ext in json yml yaml; do
-            if [[ -f "${{ env.addon }}/config.${ext}" ]]; then
-              image=$(yq e -N -M '.image' -o=json -I=0 "${{ env.addon }}/config.${ext}")
-              version=$(yq e -N -M '.version' -o=json -I=0 "${{ env.addon }}/config.${ext}")
+            if [[ -f "$ADDON/config.${ext}" ]]; then
+              image=$(yq e -N -M '.image' -o=json -I=0 "$ADDON/config.${ext}")
+              version=$(yq e -N -M '.version' -o=json -I=0 "$ADDON/config.${ext}")
               break
             fi
           done
@@ -189,17 +198,19 @@ jobs:
           echo "architectures=$archs" >> "$GITHUB_OUTPUT"
           echo "image=$image" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
-        env:
-          addon: ${{ matrix.addon }}
-
       - name: Check if add-on is being built for architecture
         id: check
+        env:
+          ADDON: ${{ matrix.addon }}
+          ARCH: ${{ matrix.arch }}
+          ARCHITECTURES: ${{ steps.metadata.outputs.architectures }}
+          IMAGE: ${{ steps.metadata.outputs.image }}
         run: |
-          if [[ "${{ steps.metadata.outputs.architectures }}" =~ ${{ matrix.arch }} ]]; then
-            echo "build_arch=true" >> $GITHUB_OUTPUT;
-            echo "image=$(echo ${{ steps.metadata.outputs.image }} | cut -d'/' -f3)" >> $GITHUB_OUTPUT;
+          if jq -e --arg a "$ARCH" 'index($a)' <<< "$ARCHITECTURES" >/dev/null; then
+            echo "build_arch=true" >> "$GITHUB_OUTPUT";
+            echo "image=$(printf '%s\n' "$IMAGE" | cut -d'/' -f3)" >> "$GITHUB_OUTPUT";
           else
-            echo "${{ matrix.arch }} is not a valid arch for ${{ matrix.addon }}, skipping build";
+            echo "$ARCH is not a valid arch for $ADDON, skipping build";
           fi
 
       - name: Set build arguments
