@@ -27,6 +27,8 @@ jobs:
     outputs:
       changed_addons: ${{ steps.changed_addons.outputs.addons }}
       changed: ${{ steps.changed_addons.outputs.changed }}
+      build_matrix: ${{ steps.build_matrix.outputs.matrix }}
+      manifest_matrix: ${{ steps.build_matrix.outputs.manifest_matrix }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -34,28 +36,34 @@ jobs:
       - name: Find add-on directories
         id: addons
         env:
-          MONITORED_FILES: 'apparmor.txt build.yaml config.yaml Dockerfile rootfs/**'
+          MONITORED_FILES: 'apparmor.txt config.json config.yaml config.yml Dockerfile rootfs/**'
         run: |
           declare -a addons
           declare -a addons_list
           declare -a filters
+          declare -a monitored_files
 
-          for addon in $(find ./ -maxdepth 2 -name config.json -o -name config.yaml -o -name config.yml | cut -d "/" -f2 | sort -u); do
+          read -r -a monitored_files <<< "$MONITORED_FILES"
+          while IFS= read -r addon; do
             addons+=("${addon}");
             addons_list+=("\"${addon}\",");
-            for file in $MONITORED_FILES; do
+            for file in "${monitored_files[@]}"; do
               filters+=("\"${addon}/${file}\",");
             done
-          done
+          done < <(find ./ -maxdepth 2 \( -name config.json -o -name config.yaml -o -name config.yml \) -print | cut -d "/" -f2 | sort -u)
 
-          json_list=$(echo ${addons_list[@]} | rev | cut -c 2- | rev)
-          filter_list=$(echo ${filters[@]} | rev | cut -c 2- | rev)
+          json_list=$(printf '%s' "${addons_list[@]}")
+          filter_list=$(printf '%s' "${filters[@]}")
+          json_list=${json_list%,}
+          filter_list=${filter_list%,}
 
-          echo "Found addons: ${addons[@]}"
+          echo "Found addons: ${addons[*]}"
           echo "Found addons (JSON): [${json_list}]"
-          echo "addons=${addons[@]}" >> "$GITHUB_OUTPUT"
-          echo "addons_list=[${json_list}]" >> "$GITHUB_OUTPUT"
-          echo "filters=[${filter_list}]" >> "$GITHUB_OUTPUT"
+          {
+            echo "addons=${addons[*]}"
+            echo "addons_list=[${json_list}]"
+            echo "filters=[${filter_list}]"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Get changed files
         id: filter
@@ -93,10 +101,76 @@ jobs:
           if [[ "$changed" != '[]' ]]; then
             echo "Changed add-ons: $changed";
             echo "changed=true" >> "$GITHUB_OUTPUT";
-            echo "addons=$changed" >> "$GITHUB_OUTPUT";
           else
             echo "No addon had changes that require linting and building";
+            echo "changed=false" >> "$GITHUB_OUTPUT";
           fi
+          echo "addons=$changed" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare build matrices
+        id: build_matrix
+        env:
+          CHANGED_ADDONS: ${{ steps.changed_addons.outputs.addons }}
+        run: |
+          build_matrix='{"include":[]}'
+          manifest_matrix='{"include":[]}'
+
+          while IFS= read -r addon; do
+            architectures=[]
+            image=""
+            version=""
+
+            for ext in yaml yml json; do
+              config="$addon/config.${ext}"
+              if [[ -f "$config" ]]; then
+                architectures=$(yq e -N -M '.arch' -o=json -I=0 "$config")
+                image=$(yq e -N -M '.image' "$config")
+                version=$(yq e -N -M '.version' "$config")
+                break
+              fi
+            done
+
+            if [[ -z "$image" || "$image" == "null" ]]; then
+              echo "No image configured for $addon" >&2
+              exit 1
+            fi
+
+            registry_prefix="${image%/*}"
+            image_name="${image##*/}"
+            manifest_matrix=$(jq -c \
+              --arg addon "$addon" \
+              --arg image_name "$image_name" \
+              --arg registry_prefix "$registry_prefix" \
+              --arg architectures "$architectures" \
+              --arg version "$version" \
+              '.include += [{addon: $addon, architectures: $architectures, image_name: $image_name, registry_prefix: $registry_prefix, version: $version}]' \
+              <<< "$manifest_matrix")
+
+            while IFS= read -r arch; do
+              case "$arch" in
+                amd64) os="ubuntu-24.04" ;;
+                aarch64) os="ubuntu-24.04-arm" ;;
+                *)
+                  echo "::error::Unsupported architecture: $arch. Supported values: amd64, aarch64"
+                  exit 1
+                  ;;
+              esac
+
+              build_matrix=$(jq -c \
+                --arg addon "$addon" \
+                --arg arch "$arch" \
+                --arg os "$os" \
+                --arg image "${registry_prefix}/${arch}-${image_name}" \
+                --arg version "$version" \
+                '.include += [{addon: $addon, arch: $arch, os: $os, image: $image, version: $version}]' \
+                <<< "$build_matrix")
+            done < <(jq -r '.[]' <<< "$architectures")
+          done < <(jq -r '.[]' <<< "$CHANGED_ADDONS")
+
+          {
+            echo "matrix=$build_matrix"
+            echo "manifest_matrix=$manifest_matrix"
+          } >> "$GITHUB_OUTPUT"
 
   lint-addon:
     if: needs.prepare.outputs.changed == 'true'
@@ -145,108 +219,161 @@ jobs:
 
   build-addon:
     needs: [prepare]
-    runs-on: ubuntu-latest
-    if: needs.prepare.outputs.changed == 'true'
+    if: >-
+      needs.prepare.outputs.changed == 'true' &&
+      (
+        github.event_name == 'pull_request' ||
+        (
+          github.event_name == 'workflow_dispatch' &&
+          github.ref != format('refs/heads/{0}', github.event.repository.default_branch)
+        )
+      )
     name: Build add-on ${{ matrix.addon }}-${{ matrix.arch }}
-    env:
-      BUILD_ARGS: '--test'
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: read
-      id-token: write
-      packages: write
 
     strategy:
-      matrix:
-        addon: ${{ fromJson(needs.prepare.outputs.changed_addons) }}
-        arch: ['aarch64', 'amd64']
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.build_matrix) }}
 
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Get metadata
-        id: metadata
+      - name: Build add-on image
+        uses: home-assistant/builder/actions/build-image@4de35182ce1e329181bffcbcc84d33db5e2c7e10 # 2026.06.0
+        with:
+          arch: ${{ matrix.arch }}
+          context: './${{ matrix.addon }}'
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          cosign: 'true'
+          image: ${{ matrix.image }}
+          image-tags: |
+            ${{ matrix.version }}
+            latest
+          push: 'false'
+          version: ${{ matrix.version }}
+
+  publish-addon:
+    needs: [prepare]
+    if: >-
+      needs.prepare.outputs.changed == 'true' &&
+      (
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch'
+      ) &&
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    name: Publish add-on ${{ matrix.addon }}-${{ matrix.arch }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.build_matrix) }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Publish add-on image
+        uses: home-assistant/builder/actions/build-image@4de35182ce1e329181bffcbcc84d33db5e2c7e10 # 2026.06.0
+        with:
+          arch: ${{ matrix.arch }}
+          context: './${{ matrix.addon }}'
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          cosign: 'true'
+          image: ${{ matrix.image }}
+          image-tags: |
+            ${{ matrix.version }}
+            latest
+          push: 'true'
+          version: ${{ matrix.version }}
+
+  publish-manifest:
+    needs: [prepare, publish-addon]
+    if: >-
+      needs.prepare.outputs.changed == 'true' &&
+      (
+        github.event_name == 'push' ||
+        github.event_name == 'workflow_dispatch'
+      ) &&
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    name: Publish add-on manifest ${{ matrix.addon }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.manifest_matrix) }}
+
+    steps:
+      - name: Publish multi-arch manifest
+        uses: home-assistant/builder/actions/publish-multi-arch-manifest@4de35182ce1e329181bffcbcc84d33db5e2c7e10 # 2026.06.0
+        with:
+          architectures: ${{ matrix.architectures }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          cosign: 'true'
+          image-name: ${{ matrix.image_name }}
+          image-tags: ${{ matrix.version }}
+          registry-prefix: ${{ matrix.registry_prefix }}
+
+      - name: Verify published manifest platforms
         env:
-          ADDON: ${{ matrix.addon }}
+          ARCHITECTURES: ${{ matrix.architectures }}
+          IMAGE_NAME: ${{ matrix.image_name }}
+          REGISTRY_PREFIX: ${{ matrix.registry_prefix }}
+          VERSION: ${{ matrix.version }}
         run: |
-          archs=[]
-          image=""
-          version=""
+          image_ref="${REGISTRY_PREFIX}/${IMAGE_NAME}:${VERSION}"
+          manifest_file="$(mktemp)"
+          trap 'rm -f "$manifest_file"' EXIT
 
-          for ext in json yml yaml; do
-            if [[ -f "$ADDON/build.${ext}" ]]; then
-              archs=$(yq e -N -M '.build_from | keys' -o=json -I=0 "$ADDON/build.${ext}")
-              break
-            elif [[ -f "$ADDON/config.${ext}" ]]; then
-              archs=$(yq e -N -M '.arch' -o=json -I=0 "$ADDON/config.${ext}")
-              break
-            fi
-          done
+          docker buildx imagetools inspect --raw "$image_ref" > "$manifest_file"
 
-          for ext in json yml yaml; do
-            if [[ -f "$ADDON/config.${ext}" ]]; then
-              image=$(yq e -N -M '.image' -o=json -I=0 "$ADDON/config.${ext}")
-              version=$(yq e -N -M '.version' -o=json -I=0 "$ADDON/config.${ext}")
-              break
-            fi
-          done
+          expected_platforms=$(jq -c '
+            map(
+              if . == "amd64" then {os: "linux", architecture: "amd64"}
+              elif . == "aarch64" then {os: "linux", architecture: "arm64"}
+              else error("Unsupported architecture: " + .)
+              end
+            ) | sort_by(.architecture)
+          ' <<< "$ARCHITECTURES")
+          actual_platforms=$(jq -c '
+            [.manifests[]
+              | select(.platform.os != "unknown" and .platform.architecture != "unknown")
+              | {os: .platform.os, architecture: .platform.architecture}
+            ] | sort_by(.architecture)
+          ' "$manifest_file")
 
-          echo "Architectures: $archs"
-          echo "Image: $image"
-          echo "Version: $version"
-
-          echo "architectures=$archs" >> "$GITHUB_OUTPUT"
-          echo "image=$image" >> "$GITHUB_OUTPUT"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-      - name: Check if add-on is being built for architecture
-        id: check
-        env:
-          ADDON: ${{ matrix.addon }}
-          ARCH: ${{ matrix.arch }}
-          ARCHITECTURES: ${{ steps.metadata.outputs.architectures }}
-          IMAGE: ${{ steps.metadata.outputs.image }}
-        run: |
-          if jq -e --arg a "$ARCH" 'index($a)' <<< "$ARCHITECTURES" >/dev/null; then
-            echo "build_arch=true" >> "$GITHUB_OUTPUT";
-            echo "image=$(printf '%s\n' "$IMAGE" | cut -d'/' -f3)" >> "$GITHUB_OUTPUT";
-          else
-            echo "$ARCH is not a valid arch for $ADDON, skipping build";
+          if [[ "$actual_platforms" != "$expected_platforms" ]]; then
+            echo "Expected platforms: $expected_platforms" >&2
+            echo "Published platforms: $actual_platforms" >&2
+            exit 1
           fi
 
-      - name: Set build arguments
-        if: >-
-          steps.check.outputs.build_arch == 'true' &&
-          (
-            (github.event_name == 'push' && github.head_ref == '') ||
-            github.event_name == 'workflow_dispatch'
-          )
-        run: echo "BUILD_ARGS=" >> $GITHUB_ENV
-
-      - name: Login to GitHub Container Registry
-        if: env.BUILD_ARGS != '--test'
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build ${{ matrix.addon }} add-on
-        if: steps.check.outputs.build_arch == 'true'
-        uses: home-assistant/builder@2026.03.2
-        with:
-          args: |
-            ${{ env.BUILD_ARGS }} \
-            --${{ matrix.arch }} \
-            --target /data/${{ matrix.addon }} \
-            --image "${{ steps.check.outputs.image }}" \
-            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon \
-            --cosign
+          echo "Published manifest has exactly the configured platforms: $actual_platforms"
 
   build:
     name: Build
-    needs: [build-addon]
+    if: always()
+    needs: [build-addon, publish-addon, publish-manifest]
     runs-on: ubuntu-latest
+    permissions: {}
     steps:
       - name: Complete
-        run: echo "Build completed"
+        env:
+          BUILD_ADDON_RESULT: ${{ needs.build-addon.result }}
+          PUBLISH_ADDON_RESULT: ${{ needs.publish-addon.result }}
+          PUBLISH_MANIFEST_RESULT: ${{ needs.publish-manifest.result }}
+        run: |
+          for result in "$BUILD_ADDON_RESULT" "$PUBLISH_ADDON_RESULT" "$PUBLISH_MANIFEST_RESULT"; do
+            if [[ "$result" != "success" && "$result" != "skipped" ]]; then
+              echo "A build job failed: $result" >&2
+              exit 1
+            fi
+          done
+          echo "Build completed"

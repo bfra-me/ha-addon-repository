@@ -1,5 +1,15 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
 
+## 1.2.5
+
+- Build each architecture on its native runner with composable Home Assistant builder actions.
+- Publish the configured generic multi-architecture image manifest without a mutable `latest` alias.
+
+## 1.2.4
+
+- Migrate CI builds from the legacy `home-assistant/builder` action to composable actions.
+- Use the generic multi-architecture image name.
+
 ## 1.2.3
 
 - Drop `armhf` and `armv7` architecture support. The `home-assistant/builder` tool no longer
