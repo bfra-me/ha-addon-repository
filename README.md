@@ -17,24 +17,21 @@ This repository contains the following add-ons
 
 _Example add-on to use as a blueprint for new add-ons._
 
-<!--
-
 Notes to developers after forking or using the github template feature:
-- While developing comment out the 'image' key from 'example/config.yaml' to make the supervisor build the addon
-  - Remember to put this back when pushing up your changes.
+
+- While developing, comment out the 'image' key in 'example/config.yaml' so the supervisor builds the add-on locally.
+  - Restore it before pushing your changes.
 - When you merge to the 'main' branch of your repository a new build will be triggered.
   - Make sure you adjust the 'version' key in 'example/config.yaml' when you do that.
   - Make sure you update 'example/CHANGELOG.md' when you do that.
   - The first time this runs you might need to adjust the image configuration on github container registry to make it public
-  - You may also need to adjust the github Actions configuration (Settings > Actions > General > Workflow > Read & Write)
-- Adjust the 'image' key in 'example/config.yaml' so it points to your username instead of 'bfra-me'.
-  - This is where the build images will be published to.
+  - You may also need to set Settings > Actions > General > Workflow permissions to 'Read and write'
+- Adjust the 'image' key in 'example/config.yaml' to `ghcr.io/<your-github-owner>/addon-<slug>`.
+  - Keep this image name generic; the workflow derives architecture-specific build images internally.
 - Rename the example directory.
   - The 'slug' key in 'example/config.yaml' should match the directory name.
 - Adjust all keys/url's that points to 'bfra-me' to now point to your user/fork.
-- Share your repository on the forums https://community.home-assistant.io/c/projects/9
-- Do awesome stuff!
- -->
+- Share your repository on the [Home Assistant Projects forum](https://community.home-assistant.io/c/projects/9).
 
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg?style=for-the-badge
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg?style=for-the-badge

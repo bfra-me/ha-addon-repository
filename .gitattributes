@@ -1,5 +1,3 @@
 * text=auto
 
 *.json text linguist-language=JSON-with-comments
-
-.cursorrules text linguist-language=Markdown
