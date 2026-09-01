@@ -38,7 +38,7 @@ env:
     Review this Home Assistant add-on PR focusing on:
     - Dockerfile best practices: SHA-pinned base images (ghcr.io/home-assistant/*), minimal
       layers, non-root safety, s6-overlay service structure
-    - config.yaml / build.yaml validity: required fields (name, version, slug, arch, description),
+    - config.yaml / Dockerfile validity: required fields (name, version, slug, arch, description),
       arch list accuracy, correct image reference pattern
     - Shell script quality (run/finish scripts): bashio usage, signal handling, proper exit codes,
       shellcheck-passing patterns — avoid SC2086 unquoted variables, SC2060 char class issues
@@ -109,8 +109,8 @@ env:
          Create a PR for formatting fixes if any are found.
        - Shell script lint (shellcheck): check example/rootfs/**/{run,finish} and any *.sh files.
          Create a PR for any issues found.
-       - YAML validity: verify config.yaml and build.yaml contain required fields
-         (name, version, slug, arch, description for config; build_from keys for build).
+       - YAML validity: verify config.yaml contains required fields
+         (name, version, slug, arch, description).
        - version consistency: confirm config.yaml version matches the latest entry in CHANGELOG.md.
          If mismatched, create a PR to align them.
        - Unpinned or missing tool versions in .tool-versions: verify node and python entries
