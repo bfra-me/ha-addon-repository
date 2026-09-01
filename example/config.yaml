@@ -1,12 +1,10 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
 name: Example add-on
-version: 1.2.2
+version: 1.2.3
 slug: example
 description: Example add-on
 url: 'https://github.com/bfra-me/ha-addon-repository/tree/main/example'
 arch:
-  - armhf
-  - armv7
   - aarch64
   - amd64
 init: false

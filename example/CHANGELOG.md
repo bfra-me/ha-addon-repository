@@ -1,5 +1,10 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
 
+## 1.2.3
+
+- Drop `armhf` and `armv7` architecture support. The `home-assistant/builder` tool no longer
+  accepts these architecture flags, causing CI builds to fail.
+
 ## 1.2.2
 
 - Maintenance updates
