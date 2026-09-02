@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/add-ons/configuration#add-on-config
 name: Example add-on
-version: 1.2.7
+version: 1.2.8
 slug: example
 description: Example add-on
 url: 'https://github.com/bfra-me/ha-addon-repository/tree/main/example'
@@ -8,6 +8,49 @@ arch:
   - aarch64
   - amd64
 init: false
+
+# Lifecycle
+# startup: application  # Start after Home Assistant; use initialize/system/services/once as needed.
+# boot: auto  # Start automatically at boot; use manual or manual_only for manual control.
+
+# Network and web UI
+# ports: {"8080/tcp": 8080}  # Expose a container port on the host.
+# ports_description: {"8080/tcp": "Web interface"}  # Describe an exposed port in the UI.
+# webui: 'http://[HOST]:[PORT:8080]'  # Add an Open Web UI link for a port-based interface.
+# ingress: true  # Serve the web UI through authenticated Home Assistant ingress.
+# ingress_port: 8099  # Set the container port used by ingress when it is not 8099.
+# panel_icon: mdi:puzzle  # Choose the MDI icon shown for the panel entry.
+# host_network: true  # Share the host network; risk: broad network exposure.
+# watchdog: 'http://[HOST]:[PORT:8080]/health'  # Restart the add-on when its health URL fails.
+
+# Home Assistant integration
+# hassio_api: true  # Allow calls to the Supervisor REST API when required.
+# hassio_role: manager  # Select the Supervisor API role; risk: broader Supervisor access.
+# homeassistant_api: true  # Allow calls to the Home Assistant Core API proxy.
+# discovery: [mqtt]  # Advertise a service for Home Assistant discovery.
+# services: [mqtt:want]  # Consume or provide a supported service; use provide, want, or need.
+# environment: {APP_MODE: example}  # Set environment variables inside the container.
+# backup: hot  # Include the add-on in hot or cold backups.
+# backup_exclude: ['cache/**']  # Exclude matching files or paths from backups.
+
+# Hardware access
+# devices: ['/dev/ttyUSB0']  # Map a host device into the container.
+# udev: true  # Mount the host udev database read-only for device discovery.
+# usb: true  # Map raw USB access and plug-and-play support.
+# uart: true  # Automatically map host UART/serial devices.
+# gpio: true  # Map /sys/class/gpio for kernel GPIO access.
+# video: true  # Map all available video devices.
+# audio: true  # Map the Home Assistant internal audio system.
+# machine: ['<machine-type>']  # Restrict the add-on to specific Home Assistant machines.
+# tmpfs: true  # Store /tmp in a memory-backed filesystem.
+
+# Elevated privileges and sandboxing
+# apparmor: example  # Use this add-on's custom AppArmor profile.
+# privileged: [SYS_ADMIN]  # Add a Linux capability; risk: expanded host access.
+# full_access: true  # Grant Docker privileged mode; risk: near-unrestricted host access.
+# docker_api: true  # Allow read-only Docker API access; risk: sensitive host metadata.
+# host_pid: true  # Share the host PID namespace; risk: host-process visibility; not with S6.
+
 map:
   - share:rw
 options:
