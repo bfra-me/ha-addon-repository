@@ -209,13 +209,59 @@ jobs:
           prettier_options: --check .
           prettier_version: ${{ env.PRETTIER_VERSION }}
 
-  lint:
-    name: Lint
-    needs: [lint-addon, lint-prettier]
+  release-integrity:
+    name: Release integrity
     runs-on: ubuntu-latest
     steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref || github.ref }}
+
+      - name: Validate release metadata
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: .github/scripts/release-integrity.sh
+
+  lint:
+    name: Lint
+    if: always()
+    needs: [prepare, lint-addon, lint-prettier, release-integrity]
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
       - name: Complete
-        run: echo "Lint completed"
+        env:
+          PREPARE_RESULT: ${{ needs.prepare.result }}
+          PREPARE_CHANGED: ${{ needs.prepare.outputs.changed }}
+          LINT_ADDON_RESULT: ${{ needs.lint-addon.result }}
+          LINT_PRETTIER_RESULT: ${{ needs.lint-prettier.result }}
+          RELEASE_INTEGRITY_RESULT: ${{ needs.release-integrity.result }}
+        run: |
+          if [[ "$PREPARE_RESULT" != "success" ]]; then
+            echo "Prepare failed: $PREPARE_RESULT" >&2
+            exit 1
+          fi
+          if [[ "$LINT_PRETTIER_RESULT" != "success" ]]; then
+            echo "Prettier lint failed: $LINT_PRETTIER_RESULT" >&2
+            exit 1
+          fi
+          if [[ "$RELEASE_INTEGRITY_RESULT" != "success" ]]; then
+            echo "Release integrity failed: $RELEASE_INTEGRITY_RESULT" >&2
+            exit 1
+          fi
+          if [[ "$LINT_ADDON_RESULT" == "skipped" ]]; then
+            if [[ "$PREPARE_CHANGED" != "false" ]]; then
+              echo "Add-on lint was skipped despite Prepare reporting changed add-ons" >&2
+              exit 1
+            fi
+          elif [[ "$LINT_ADDON_RESULT" != "success" ]]; then
+            echo "Add-on lint failed: $LINT_ADDON_RESULT" >&2
+            exit 1
+          fi
+          echo "Lint completed"
 
   build-addon:
     needs: [prepare]
@@ -360,20 +406,56 @@ jobs:
   build:
     name: Build
     if: always()
-    needs: [build-addon, publish-addon, publish-manifest]
+    needs: [prepare, build-addon, publish-addon, publish-manifest]
     runs-on: ubuntu-latest
     permissions: {}
     steps:
       - name: Complete
         env:
+          PREPARE_RESULT: ${{ needs.prepare.result }}
+          PREPARE_CHANGED: ${{ needs.prepare.outputs.changed }}
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_REF: ${{ github.ref }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           BUILD_ADDON_RESULT: ${{ needs.build-addon.result }}
           PUBLISH_ADDON_RESULT: ${{ needs.publish-addon.result }}
           PUBLISH_MANIFEST_RESULT: ${{ needs.publish-manifest.result }}
         run: |
-          for result in "$BUILD_ADDON_RESULT" "$PUBLISH_ADDON_RESULT" "$PUBLISH_MANIFEST_RESULT"; do
-            if [[ "$result" != "success" && "$result" != "skipped" ]]; then
-              echo "A build job failed: $result" >&2
+          if [[ "$PREPARE_RESULT" != "success" ]]; then
+            echo "Prepare failed: $PREPARE_RESULT" >&2
+            exit 1
+          fi
+
+          require_status() {
+            local job=$1
+            local actual=$2
+            local expected=$3
+            if [[ "$actual" != "$expected" ]]; then
+              echo "$job must be $expected, but was $actual" >&2
               exit 1
             fi
-          done
+          }
+
+          if [[ "$PREPARE_CHANGED" != "true" ]]; then
+            require_status "build-addon" "$BUILD_ADDON_RESULT" "skipped"
+            require_status "publish-addon" "$PUBLISH_ADDON_RESULT" "skipped"
+            require_status "publish-manifest" "$PUBLISH_MANIFEST_RESULT" "skipped"
+          elif [[ "$EVENT_NAME" == "pull_request" ]]; then
+            require_status "build-addon" "$BUILD_ADDON_RESULT" "success"
+            require_status "publish-addon" "$PUBLISH_ADDON_RESULT" "skipped"
+            require_status "publish-manifest" "$PUBLISH_MANIFEST_RESULT" "skipped"
+          elif [[ "$EVENT_NAME" == "push" || "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            if [[ "$WORKFLOW_REF" == "refs/heads/$DEFAULT_BRANCH" ]]; then
+              require_status "build-addon" "$BUILD_ADDON_RESULT" "skipped"
+              require_status "publish-addon" "$PUBLISH_ADDON_RESULT" "success"
+              require_status "publish-manifest" "$PUBLISH_MANIFEST_RESULT" "success"
+            else
+              require_status "build-addon" "$BUILD_ADDON_RESULT" "success"
+              require_status "publish-addon" "$PUBLISH_ADDON_RESULT" "skipped"
+              require_status "publish-manifest" "$PUBLISH_MANIFEST_RESULT" "skipped"
+            fi
+          else
+            echo "Unsupported workflow event: $EVENT_NAME" >&2
+            exit 1
+          fi
           echo "Build completed"
