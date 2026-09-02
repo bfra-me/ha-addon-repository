@@ -83,6 +83,8 @@ The workflow is the build and publish interface; do not invent local npm scripts
 
 After creating a repository from this template, replace the sample identity and treat each top-level add-on directory as independently discoverable by CI.
 
+Fork owners must personalize `SECURITY.md` and `CODE_OF_CONDUCT.md`; review `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/bug_report.yml`, `.github/ISSUE_TEMPLATE/feature_request.yml`, `.github/ISSUE_TEMPLATE/config.yml`, and `.github/PULL_REQUEST_TEMPLATE.md` for project-specific details.
+
 ### Directory structure — created repository
 
 | Path                   | Purpose                                                                                       |
