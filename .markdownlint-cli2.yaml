@@ -6,5 +6,4 @@ config:
   MD041: false
 
 globs:
-  - '!.cursorrules'
   - '!.github'
