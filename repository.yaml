@@ -1,4 +1,4 @@
 # https://developers.home-assistant.io/docs/add-ons/repository#repository-configuration
-name: Example Home Assistant add-on repository
+name: Your Repository Name
 url: 'https://github.com/bfra-me/ha-addon-repository'
-maintainer: Awesome Maintainer <awesome@example.com>
+maintainer: Your Name <you@example.com>
