@@ -10,7 +10,9 @@ declare -a supported_configs=(config.json config.yaml config.yml)
 declare -A addon_config_count=()
 declare -A addon_config_path=()
 declare -A addon_version=()
+declare -A addon_slug=()
 declare -a addons=()
+diff_file=''
 fail_count=0
 
 fail() {
@@ -29,6 +31,14 @@ fail_global() {
   printf '::error::Release integrity — %s. Fix: %s\n' "$rule" "$fix" >&2
   fail_count=$((fail_count + 1))
 }
+
+cleanup() {
+  if [[ -n "$diff_file" ]]; then
+    rm -f "$diff_file"
+  fi
+}
+
+trap cleanup EXIT
 
 is_semver() {
   local version=$1
@@ -161,6 +171,7 @@ validate_changelog() {
   local first_heading=''
   local in_section=false
   local section_has_content=false
+  local html_comment_regex='^[[:space:]]*<!--[[:space:]]*.*[[:space:]]*-->[[:space:]]*$'
 
   if [[ ! -f "$changelog" ]]; then
     fail "$addon" 'CHANGELOG.md is missing' "add CHANGELOG.md with a first section headed '## $version' and release notes"
@@ -178,7 +189,9 @@ validate_changelog() {
     fi
 
     if [[ "$in_section" == true && -n "${line//[[:space:]]/}" ]]; then
-      section_has_content=true
+      if [[ ! "$line" =~ $html_comment_regex ]]; then
+        section_has_content=true
+      fi
     fi
   done < "$changelog"
 
@@ -245,10 +258,11 @@ validate_static_rules() {
       continue
     fi
     addon_version["$addon"]=$version
+    addon_slug["$addon"]=$(jq -r 'if has("slug") and (.slug | type) == "string" then .slug else empty end' <<< "$config_json")
 
     image_type=$(jq -r 'if has("image") then (.image | type) else "missing" end' <<< "$config_json")
     if [[ "$image_type" != 'string' ]]; then
-      fail "$addon" "image must be a non-empty untagged repository reference, but is $image_type" "set image in '$config_path' to an untagged repository such as 'ghcr.io/example/addon'"
+      fail "$addon" "image must be a non-empty untagged repository reference, but is $image_type" "set image in '$config_path' to an untagged repository such as 'registry/namespace/addon'"
       continue
     fi
 
@@ -288,23 +302,36 @@ find_base_config() {
 validate_pr_diff_rules() {
   local event_name=${GITHUB_EVENT_NAME:-local}
   local base_ref_name=${GITHUB_BASE_REF:-}
-  local diff_file
   local changed_file
   local addon
-  local basename
+  local relative_path
   local base_config_info
   local base_config_count
   local base_config
   local base_config_json
+  local candidate_config_path
+  local candidate_config_json
+  local candidate_slug
+  local base_config_name
   local base_version_type
   local base_version
   local current_version
   local comparison
+  local base_config_path
+  declare -a base_config_paths=()
+  declare -A base_addons=()
+  declare -A pr_addons=()
   declare -A release_affecting=()
   declare -A changelog_changed=()
 
   if [[ "$event_name" != 'pull_request' ]]; then
     return 0
+  fi
+
+  if ((${#addons[@]} > 0)); then
+    for addon in "${addons[@]}"; do
+      pr_addons["$addon"]=1
+    done
   fi
 
   if [[ -z "$base_ref_name" ]]; then
@@ -325,15 +352,29 @@ validate_pr_diff_rules() {
     return
   fi
 
+  while IFS= read -r -d '' base_config_path; do
+    [[ "$base_config_path" == */*/* ]] && continue
+    base_config_name=${base_config_path##*/}
+    case "$base_config_name" in
+      config.json|config.yaml|config.yml)
+        base_config_paths+=("$base_config_path")
+        base_addons["${base_config_path%%/*}"]=1
+        ;;
+    esac
+  done < <(git ls-tree -r -z --name-only "$base_ref_name")
+
   while IFS= read -r -d '' changed_file; do
     [[ "$changed_file" == */* ]] || continue
     addon=${changed_file%%/*}
-    [[ -n "${addon_config_count["$addon"]+set}" ]] || continue
-    basename=${changed_file##*/}
+    if [[ -z "${addon_config_count["$addon"]+set}" && -z "${base_addons["$addon"]+set}" ]]; then
+      continue
+    fi
+    pr_addons["$addon"]=1
+    relative_path=${changed_file#"$addon"/}
 
-    case "$basename" in
+    case "$relative_path" in
       README.md|DOCS.md|CHANGELOG.md|icon.png|logo.png)
-        if [[ "$basename" == 'CHANGELOG.md' ]]; then
+        if [[ "$relative_path" == 'CHANGELOG.md' ]]; then
           changelog_changed["$addon"]=1
         fi
         ;;
@@ -342,30 +383,59 @@ validate_pr_diff_rules() {
         ;;
     esac
   done < "$diff_file"
-  rm -f "$diff_file"
 
-  if ((${#release_affecting[@]} == 0)); then
+  if ((${#pr_addons[@]} == 0)); then
     return 0
   fi
 
-  for addon in "${!release_affecting[@]}"; do
+  for addon in "${!pr_addons[@]}"; do
+    if [[ -z "${addon_config_count["$addon"]+set}" ]]; then
+      if [[ -d "$addon" ]]; then
+        fail "$addon" 'changed files remain but no supported config file exists' "restore the add-on config, or remove the entire add-on directory"
+      fi
+      continue
+    fi
+    [[ -n "${release_affecting["$addon"]+set}" ]] || continue
+
     if [[ -z "${addon_version["$addon"]+set}" ]]; then
       fail "$addon" 'the current version is unavailable for PR comparison' "repair this add-on's static version rule before changing release-affecting files"
       continue
     fi
     base_config_info=$(find_base_config "$base_ref_name" "$addon")
     IFS=$'\t' read -r base_config_count base_config <<< "$base_config_info"
+    if [[ "$base_config_count" == '1' ]]; then
+      base_config_path="$addon/$base_config"
+    fi
 
     if [[ "$base_config_count" == '0' ]]; then
-      continue
+      if [[ -n "${addon_slug["$addon"]+set}" && -n "${addon_slug["$addon"]}" ]]; then
+        base_config_count=0
+        base_config=''
+        base_config_path=''
+        if ((${#base_config_paths[@]} > 0)); then
+          for candidate_config_path in "${base_config_paths[@]}"; do
+            if ! candidate_config_json=$(git show "$base_ref_name:$candidate_config_path" | yq e -o=json -I=0 '.' - 2>/dev/null); then
+              continue
+            fi
+            candidate_slug=$(jq -r 'if type == "object" and has("slug") and (.slug | type) == "string" then .slug else empty end' <<< "$candidate_config_json")
+            if [[ "$candidate_slug" == "${addon_slug["$addon"]}" ]]; then
+              base_config_count=$((base_config_count + 1))
+              base_config_path=$candidate_config_path
+            fi
+          done
+        fi
+      fi
+      if [[ "$base_config_count" == '0' ]]; then
+        continue
+      fi
     fi
     if [[ "$base_config_count" != '1' ]]; then
       fail "$addon" "the base branch has $base_config_count supported config files, so the version cannot be compared" "leave exactly one of config.json, config.yaml, or config.yml on the base branch"
       continue
     fi
 
-    if ! base_config_json=$(git show "$base_ref_name:$addon/$base_config" | yq e -o=json -I=0 '.' - 2>/dev/null); then
-      fail "$addon" "the base config '$base_config' cannot be parsed" "fix the base branch config before changing release-affecting files"
+    if ! base_config_json=$(git show "$base_ref_name:$base_config_path" | yq e -o=json -I=0 '.' - 2>/dev/null); then
+      fail "$addon" "the base config '$base_config_path' cannot be parsed" "fix the base branch config before changing release-affecting files"
       continue
     fi
 
@@ -392,7 +462,7 @@ validate_pr_diff_rules() {
   return 0
 }
 
-while IFS= read -r config_path; do
+while IFS= read -r -d '' config_path; do
   addon=${config_path#./}
   addon=${addon%%/*}
   if [[ -z "${addon_config_count["$addon"]+set}" ]]; then
@@ -401,7 +471,7 @@ while IFS= read -r config_path; do
   fi
   addon_config_count["$addon"]=$((addon_config_count["$addon"] + 1))
   addon_config_path["$addon"]="$config_path"
-done < <(find . -mindepth 2 -maxdepth 2 -type f \( -name config.json -o -name config.yaml -o -name config.yml \) -print | sort)
+done < <(find . -mindepth 2 -maxdepth 2 -type f \( -name config.json -o -name config.yaml -o -name config.yml \) -print0 | sort -z)
 
 validate_static_rules
 
