@@ -27,6 +27,7 @@ jobs:
     outputs:
       changed_addons: ${{ steps.changed_addons.outputs.addons }}
       changed: ${{ steps.changed_addons.outputs.changed }}
+      scripts_changed: ${{ steps.filter.outputs.scripts_changed }}
       build_matrix: ${{ steps.build_matrix.outputs.matrix }}
       manifest_matrix: ${{ steps.build_matrix.outputs.manifest_matrix }}
     steps:
@@ -71,6 +72,8 @@ jobs:
         with:
           filters: |
             changed: ${{ steps.addons.outputs.filters }}
+            scripts_changed:
+              - '.github/scripts/**'
           list-files: json
 
       - name: Get changed add-ons
@@ -225,10 +228,27 @@ jobs:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: .github/scripts/release-integrity.sh
 
+  release-integrity-tests:
+    if: needs.prepare.outputs.scripts_changed == 'true'
+    name: Release integrity tests
+    needs: prepare
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref || github.ref }}
+
+      - name: Run release integrity regression suite
+        run: bash .github/scripts/release-integrity-test.sh
+
   lint:
     name: Lint
     if: always()
-    needs: [prepare, lint-addon, lint-prettier, release-integrity]
+    needs: [prepare, lint-addon, lint-prettier, release-integrity, release-integrity-tests]
     runs-on: ubuntu-latest
     permissions: {}
     steps:
@@ -239,6 +259,8 @@ jobs:
           LINT_ADDON_RESULT: ${{ needs.lint-addon.result }}
           LINT_PRETTIER_RESULT: ${{ needs.lint-prettier.result }}
           RELEASE_INTEGRITY_RESULT: ${{ needs.release-integrity.result }}
+          PREPARE_SCRIPTS_CHANGED: ${{ needs.prepare.outputs.scripts_changed }}
+          RELEASE_INTEGRITY_TESTS_RESULT: ${{ needs.release-integrity-tests.result }}
         run: |
           if [[ "$PREPARE_RESULT" != "success" ]]; then
             echo "Prepare failed: $PREPARE_RESULT" >&2
@@ -259,6 +281,15 @@ jobs:
             fi
           elif [[ "$LINT_ADDON_RESULT" != "success" ]]; then
             echo "Add-on lint failed: $LINT_ADDON_RESULT" >&2
+            exit 1
+          fi
+          if [[ "$RELEASE_INTEGRITY_TESTS_RESULT" == "skipped" ]]; then
+            if [[ "$PREPARE_SCRIPTS_CHANGED" != "false" ]]; then
+              echo "Release integrity tests were skipped despite Prepare reporting script changes" >&2
+              exit 1
+            fi
+          elif [[ "$RELEASE_INTEGRITY_TESTS_RESULT" != "success" ]]; then
+            echo "Release integrity tests failed: $RELEASE_INTEGRITY_TESTS_RESULT" >&2
             exit 1
           fi
           echo "Lint completed"
