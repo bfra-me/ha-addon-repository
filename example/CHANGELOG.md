@@ -1,5 +1,9 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
 
+## 1.2.6
+
+- Update `tempio` to `2026.07.0`.
+
 ## 1.2.5
 
 - Build each architecture on its native runner with composable Home Assistant builder actions.
