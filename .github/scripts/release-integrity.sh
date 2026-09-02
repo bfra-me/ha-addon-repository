@@ -171,7 +171,11 @@ validate_changelog() {
   local first_heading=''
   local in_section=false
   local section_has_content=false
-  local html_comment_regex='^[[:space:]]*<!--[[:space:]]*.*[[:space:]]*-->[[:space:]]*$'
+  local html_comment_start='<!--'
+  local html_comment_end='-->'
+  local html_comment_open=false
+  local content_line
+  local comment_prefix
 
   if [[ ! -f "$changelog" ]]; then
     fail "$addon" 'CHANGELOG.md is missing' "add CHANGELOG.md with a first section headed '## $version' and release notes"
@@ -189,9 +193,33 @@ validate_changelog() {
     fi
 
     if [[ "$in_section" == true && -n "${line//[[:space:]]/}" ]]; then
-      if [[ ! "$line" =~ $html_comment_regex ]]; then
-        section_has_content=true
-      fi
+      content_line=$line
+      while true; do
+        if [[ "$html_comment_open" == true ]]; then
+          if [[ "$content_line" == *"$html_comment_end"* ]]; then
+            content_line=${content_line#*"$html_comment_end"}
+            html_comment_open=false
+          else
+            content_line=''
+            break
+          fi
+        fi
+
+        if [[ "$content_line" == *"$html_comment_start"* ]]; then
+          comment_prefix=${content_line%%"$html_comment_start"*}
+          if [[ -n "${comment_prefix//[[:space:]]/}" ]]; then
+            section_has_content=true
+          fi
+          content_line=${content_line#*"$html_comment_start"}
+          html_comment_open=true
+          continue
+        fi
+
+        if [[ -n "${content_line//[[:space:]]/}" ]]; then
+          section_has_content=true
+        fi
+        break
+      done
     fi
   done < "$changelog"
 
