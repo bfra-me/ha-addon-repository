@@ -1,5 +1,9 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
 
+## 1.2.7
+
+- Use an explicit pinned multi-platform base image in the Dockerfile.
+
 ## 1.2.6
 
 - Update `tempio` to `2026.07.0`.
