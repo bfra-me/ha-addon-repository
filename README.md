@@ -19,6 +19,7 @@ _Example add-on to use as a blueprint for new add-ons._
 
 Notes to developers after forking or using the github template feature:
 
+- Update the `name`, `url`, and `maintainer` fields in `repository.yaml`.
 - While developing, comment out the 'image' key in 'example/config.yaml' so the supervisor builds the add-on locally.
   - Restore it before pushing your changes.
 - When you merge to the 'main' branch of your repository a new build will be triggered.

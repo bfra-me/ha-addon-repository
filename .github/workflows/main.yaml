@@ -245,10 +245,23 @@ jobs:
       - name: Run release integrity regression suite
         run: bash .github/scripts/release-integrity-test.sh
 
+  repository-metadata:
+    name: Repository metadata
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref || github.ref }}
+
+      - name: Validate repository metadata
+        run: .github/scripts/repository-metadata.sh
+
   lint:
     name: Lint
     if: always()
-    needs: [prepare, lint-addon, lint-prettier, release-integrity, release-integrity-tests]
+    needs: [prepare, lint-addon, lint-prettier, release-integrity, release-integrity-tests, repository-metadata]
     runs-on: ubuntu-latest
     permissions: {}
     steps:
@@ -261,6 +274,7 @@ jobs:
           RELEASE_INTEGRITY_RESULT: ${{ needs.release-integrity.result }}
           PREPARE_SCRIPTS_CHANGED: ${{ needs.prepare.outputs.scripts_changed }}
           RELEASE_INTEGRITY_TESTS_RESULT: ${{ needs.release-integrity-tests.result }}
+          REPOSITORY_METADATA_RESULT: ${{ needs.repository-metadata.result }}
         run: |
           if [[ "$PREPARE_RESULT" != "success" ]]; then
             echo "Prepare failed: $PREPARE_RESULT" >&2
@@ -290,6 +304,10 @@ jobs:
             fi
           elif [[ "$RELEASE_INTEGRITY_TESTS_RESULT" != "success" ]]; then
             echo "Release integrity tests failed: $RELEASE_INTEGRITY_TESTS_RESULT" >&2
+            exit 1
+          fi
+          if [[ "$REPOSITORY_METADATA_RESULT" != "success" ]]; then
+            echo "Repository metadata validation failed: $REPOSITORY_METADATA_RESULT" >&2
             exit 1
           fi
           echo "Lint completed"
