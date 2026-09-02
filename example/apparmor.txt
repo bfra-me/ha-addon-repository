@@ -1,5 +1,12 @@
 #include <tunables/global>
 
+# Rename checklist (line numbers below are for this file): change the top-level
+# profile name `example` on line 10 and the signal peer suffix `*_example` on
+# line 44 when the add-on directory/slug is renamed. Keep the executable and
+# child-profile identifier `my_program` on lines 38 and 40 in sync if it changes.
+# This is a minimum working example, not a production-hardened profile; review
+# and reduce its permissions before shipping a real add-on.
+
 profile example flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
 
@@ -39,7 +46,7 @@ profile example flags=(attach_disconnected,mediate_deleted) {
     # Access to options.json and other files within your addon
     /data/** rw,
 
-    # Access to mapped volumes specified in config.json
+    # Access to mapped volumes specified in config.yaml
     /share/** rw,
 
     # Access required for service functionality

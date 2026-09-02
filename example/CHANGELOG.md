@@ -1,5 +1,9 @@
 <!-- https://developers.home-assistant.io/docs/add-ons/presentation#keeping-a-changelog -->
 
+## 1.2.8
+
+- Document common add-on configuration options and clarify AppArmor rename requirements.
+
 ## 1.2.7
 
 - Use an explicit pinned multi-platform base image in the Dockerfile.
