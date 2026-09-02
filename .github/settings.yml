@@ -12,7 +12,9 @@ branches:
     protection:
       required_status_checks:
         strict: true
-        contexts: ['Prepare', 'Lint', 'Build', 'Renovate / Renovate', 'Fro Bot']
+        # Scorecard is deliberately absent: it runs on push/schedule only, never on
+        # pull_request, so requiring it would block every pull request permanently.
+        contexts: ['Prepare', 'Lint', 'Build', 'Actionlint', 'Hadolint', 'Zizmor', 'Renovate / Renovate', 'Fro Bot']
       enforce_admins: true
       required_pull_request_reviews:
         required_approving_review_count: 1
