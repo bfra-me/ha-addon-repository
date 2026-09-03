@@ -21,7 +21,13 @@ name: Renovate
         required: false
         type: boolean
         default: false
-  workflow_run:
+  # Runs a full Renovate pass once Main succeeds on the default branch. The
+  # called workflow grants only contents: read, checks out no ref (so it gets
+  # the default branch rather than a pull request head), downloads no artifacts
+  # from the triggering run, and uses event body text only inside contains()
+  # predicates — so the privilege escalation this audit exists to catch has no
+  # path here. Re-check when the pinned SHA below changes.
+  workflow_run: # zizmor: ignore[dangerous-triggers]
     workflows: [Main]
     branches: [main]
     types: [completed]
@@ -30,6 +36,8 @@ jobs:
   renovate:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     name: Renovate
+    permissions:
+      contents: read
     secrets:
       APPLICATION_ID: ${{ secrets.APPLICATION_ID }}
       APPLICATION_PRIVATE_KEY: ${{ secrets.APPLICATION_PRIVATE_KEY }}
