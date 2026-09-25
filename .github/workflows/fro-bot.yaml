@@ -210,7 +210,7 @@ jobs:
           token: ${{ secrets.FRO_BOT_PAT }}
 
       - name: Run Fro Bot
-        uses: fro-bot/agent@5494812ab3b9a96573e9807e99f7fdfdd5d92e81 # v0.112.0
+        uses: fro-bot/agent@930ffc9fed93d5a6e5f2c0f9a51b4bc2fcf1e15e # v0.115.1
         env:
           OPENCODE_PROMPT_ARTIFACT: 'true'
           PROMPT: >-
