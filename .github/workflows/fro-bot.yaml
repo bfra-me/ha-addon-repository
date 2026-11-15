@@ -210,7 +210,7 @@ jobs:
           token: ${{ secrets.FRO_BOT_PAT }}
 
       - name: Run Fro Bot
-        uses: fro-bot/agent@7f7bf8917435c04c83dd3bb749896ffec6b3886b # v0.136.5
+        uses: fro-bot/agent@4e394905b7eafda2d7424816eb7846d3f09c40df # v0.144.2
         env:
           OPENCODE_PROMPT_ARTIFACT: 'true'
           PROMPT: >-
@@ -221,6 +221,7 @@ jobs:
               || ''
             }}
         with:
+          isolate-agent: true
           auth-json: ${{ secrets.OPENCODE_AUTH_JSON }}
           github-token: ${{ secrets.FRO_BOT_PAT }}
           model: ${{ vars.FRO_BOT_MODEL }}
